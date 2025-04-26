@@ -6,6 +6,10 @@
 
 #include <tusb.h>
 
+#include <py/gc.h>
+#include <py/runtime.h>
+#include <py/stackctrl.h>
+
 #include "buttons.hpp"
 #include "font.hpp"
 #include "lcd.hpp"
@@ -105,6 +109,13 @@ void draw_frame()
     while (true) tight_loop_contents();
 }
 
+void init_python() {
+    static char py_heap[4096];
+    mp_stack_ctrl_init();
+    gc_init(py_heap, py_heap + sizeof(py_heap));
+    mp_init();
+}
+
 [[noreturn]] int main()
 {
     stdio_init_all();
@@ -113,6 +124,8 @@ void draw_frame()
     usb::init();
 
     buttons::init();
+
+    init_python();
 
     init_sin_table();
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 
 #define MICROPY_CONFIG_ROM_LEVEL    (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
