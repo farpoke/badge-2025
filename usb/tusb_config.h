@@ -1,0 +1,45 @@
+#pragma once
+
+#define CFG_TUSB_RHPORT0_MODE (OPT_MODE_DEVICE)
+
+#define CFG_TUD_CDC 1
+#define CFG_TUD_CDC_RX_BUFSIZE 1024
+#define CFG_TUD_CDC_TX_BUFSIZE 1024
+
+#define CFG_TUD_MSC 1
+#define CFG_TUD_MSC_EP_BUFSIZE 1024
+
+#define USB_VID 0xcafe
+#define USB_PID 0xcafe
+
+#define DEVICE_VERSION_BCD 0x0100
+
+enum {
+    USB_IF_NUM_CDC = 0,
+    USB_IF_NUM_CDC_DATA,
+    USB_IF_NUM_MSC,
+    USB_IF_NUM_TOTAL
+};
+
+enum {
+    USB_EP_NUM_CDC_NOTIF = 0x81,
+    USB_EP_NUM_CDC_OUT   = 0x02,
+    USB_EP_NUM_CDC_IN    = 0x82,
+
+    USB_EP_NUM_MSC_OUT   = 0x03,
+    USB_EP_NUM_MSC_IN    = 0x83,
+};
+
+enum {
+    USB_STRING_LANGUAGES = 0,
+
+    USB_STRING_VENDOR,
+    USB_STRING_PRODUCT,
+    USB_STRING_SERIAL,
+
+    USB_STRING_CDC_IF,
+
+    USB_STRING_MSC_IF,
+};
+
+#define USB_MSC_BLOCK_SIZE 512

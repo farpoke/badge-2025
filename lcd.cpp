@@ -1,0 +1,424 @@
+#include "lcd.hpp"
+
+#include <cstdio>
+#include <pico/stdlib.h>
+#include <hardware/gpio.h>
+#include <hardware/pwm.h>
+#include <hardware/spi.h>
+
+#define WRITE_VALUE(name, value) gpio_put(name, (value) ? 1 : 0)
+#define WRITE_HIGH(name) WRITE_VALUE(name, true)
+#define WRITE_LOW(name) WRITE_VALUE(name, false)
+
+#define READ_VALUE(name) gpio_get(name)
+
+#define LCD_SPI_DELAY() do{ asm volatile ("nop"); }while(0)
+
+namespace lcd::internal {
+
+    Pixel frame1[FRAME_SIZE] __attribute__((used));
+    Pixel frame2[FRAME_SIZE] __attribute__((used));
+
+    Pixel *currentFrame = frame1;
+    Pixel *backFrame = frame2;
+
+    void wait_for_spi() {
+        while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
+    }
+
+    void dir_out() {
+        wait_for_spi();
+        WRITE_HIGH(LCD_SPI_DIR_PIN);
+    }
+
+    void dir_in() {
+        wait_for_spi();
+        WRITE_LOW(LCD_SPI_DIR_PIN);
+    }
+
+    void select_command() {
+        wait_for_spi();
+        WRITE_LOW(LCD_DCX_PIN);
+        WRITE_LOW(LCD_CS_PIN);
+    }
+
+    void select_data() {
+        wait_for_spi();
+        WRITE_HIGH(LCD_DCX_PIN);
+        WRITE_LOW(LCD_CS_PIN);
+    }
+
+    void deselect() {
+        wait_for_spi();
+        WRITE_HIGH(LCD_CS_PIN);
+    }
+
+    void clock_cycle() {
+        wait_for_spi();
+        gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SIO);
+        gpio_set_dir(LCD_SPI_CLK_PIN, true);
+        gpio_put(LCD_SPI_CLK_PIN, 1);
+        LCD_SPI_DELAY();
+        gpio_put(LCD_SPI_CLK_PIN, 0);
+        LCD_SPI_DELAY();
+        gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
+    }
+
+    void write(uint8_t byte) {
+        dir_out();
+        auto n = spi_write_blocking(LCD_SPI_PORT, &byte, 1);
+        if (n != 1) {
+            printf("! lcd::write(%02x) wrote %d bytes\n", byte, n);
+        }
+    }
+
+    void write(const void* data, size_t n_bytes) {
+        dir_out();
+        auto ptr = reinterpret_cast<const uint8_t*>(data);
+        auto n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
+        if (n != n_bytes) {
+            printf("! lcd::write(..., %d) wrote %d bytes\n", n_bytes, n);
+        }
+    }
+
+    void begin_read_sequence() {
+        wait_for_spi();
+        // Lower baud rate?
+    }
+
+    void read(void* buffer, size_t n_bytes, bool dummy_first) {
+        dir_in();
+        if (dummy_first) clock_cycle();
+        auto ptr = reinterpret_cast<uint8_t*>(buffer);
+        auto n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
+        if (n != n_bytes) {
+            printf("! lcd::read(..., %d, %d) read %d bytes\n", n_bytes, dummy_first, n);
+        }
+    }
+
+    void end_read_sequence() {
+        wait_for_spi();
+        // Restore baud rate?
+    }
+
+    void simple_cmd(Command cmd) {
+        select_command();
+        write(cmd);
+        deselect();
+    }
+
+    template<typename T = uint8_t>
+    void simple_cmd_write(Command cmd, const T &data) {
+        select_command();
+        write(cmd);
+        select_data();
+        write(&data, sizeof(T));
+        deselect();
+    }
+
+    template<typename T>
+    T simple_cmd_read(Command cmd) {
+        begin_read_sequence();
+        // Send command byte.
+        select_command();
+        write(cmd);
+        // Read data.
+        select_data();
+        T result = { };
+        read(&result, sizeof(result), sizeof(T) > 1);
+        // Need extra trailing clock cycle.
+        clock_cycle();
+        deselect();
+        // Extra clock cycle after deselect, to ensure the padding needed by the driver IC.
+        clock_cycle();
+        end_read_sequence();
+        return result;
+    }
+
+}
+
+namespace lcd {
+    using namespace internal;
+
+    void init() {
+        printf("> lcd::init ");
+        
+        spi_init(LCD_SPI_PORT, SPI_FREQ);
+        
+        gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
+        gpio_set_function(LCD_SPI_OUT_PIN, GPIO_FUNC_SPI);
+        gpio_set_function(LCD_SPI_IN_PIN,  GPIO_FUNC_SPI);
+
+        uint32_t sio_mask 
+            = (1 << LCD_SPI_DIR_PIN)
+            | (1 << LCD_CS_PIN)
+            | (1 << LCD_DCX_PIN)
+            | (1 << LCD_LED_PIN)
+            | (1 << LCD_NRST_PIN);
+        
+        gpio_set_function_masked(sio_mask, GPIO_FUNC_SIO);
+        gpio_set_dir_out_masked(sio_mask);
+        gpio_put_masked(sio_mask, sio_mask);
+
+        printf("OK\n");
+
+        reset();
+    }
+
+    void reset() {
+        printf("> lcd::reset ");
+
+        // Put all the pins to default/idle levels.
+        WRITE_LOW(LCD_DCX_PIN);
+        WRITE_HIGH(LCD_CS_PIN);
+        WRITE_HIGH(LCD_LED_PIN);
+
+        // Pull reset low for required duration, then wait for a bit longer.
+        WRITE_LOW(LCD_NRST_PIN);
+        sleep_ms(1);
+        WRITE_HIGH(LCD_NRST_PIN);
+        sleep_ms(20);
+
+        // Set driver pixel format to 16-bit color (5 red, 6 green, 5 blue).
+        simple_cmd_write(CMD_INTERFACE_PIXEL_FORMAT, 0x55);
+        sleep_ms(10);
+
+        // Tell the driver to display 180 degrees rotated (flip x and flip y).
+        // This puts the origin in the top left corner as we view the LCD.
+        simple_cmd_write(CMD_MEMORY_DATA_AC, 0xC0);
+        sleep_ms(10);
+
+        // Set column and row addresses to match display size.
+        simple_cmd_write(CMD_COL_ADDRESS, Address(COL_OFFSET, WIDTH + COL_OFFSET - 1));
+        simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
+
+        for (int i = 0; i < WIDTH * HEIGHT; i++) {
+            frame1[i] = to_pixel(255, 0, 0);
+            frame2[i] = to_pixel(0, 255, 0);
+        }
+        currentFrame = frame1;
+        backFrame = frame2;
+        end_swap();
+
+        printf("OK\n");
+    }
+
+    DisplayID read_id() {
+        printf("> Read ID...\n");
+        const auto id = simple_cmd_read<DisplayID>(CMD_READ_DISPLAY_ID);
+        printf("  Manufacturer ID : %02x\n", id.manufacturer_id);
+        printf("  Driver version  : %02x\n", id.driver_version);
+        printf("  Driver ID       : %02x\n", id.driver_id);
+        printf("\n");
+        return id;
+    }
+
+    DisplayStatus read_status() {
+        printf("> Read Status...\n");
+        const auto status = simple_cmd_read<DisplayStatus>(
+                CMD_READ_DISPLAY_STATUS);
+        //
+        printf("  Display      : %s\n", status.display_on ? "On" : "Off");
+        printf("  Booster      : %s\n", status.booster_on ? "On" : "Off");
+        printf("  Idle Mode    : %s\n", status.idle_on ? "On" : "Off");
+        printf("  Partial Mode : %s\n", status.partial_on ? "On" : "Off");
+        printf("  Sleep Mode   : %s\n", status.sleep_out ? "Out" : "In");
+        printf("  Display Mode : %s\n",
+                status.normal_on ? "Normal" : "Partial");
+        printf("  Inversion    : %s\n", status.inversion_on ? "On" : "Off");
+        printf("  Tear Effect  : %s\n", status.tear_on ? "On" : "Off");
+        printf("  Tear Mode    : %s\n",
+                status.tear_mode ? "mode1" : "mode2");
+        printf("  Gamma Curve  : %d\n", status.gamma_curve);
+        //
+        printf("  Row Order    : %s\n",
+                status.row_order ? "Bottom to Top" : "Top to Bottom");
+        printf("  Col Order    : %s\n",
+                status.col_order ? "Right to Left" : "Left to Right");
+        printf("  Exchange     : %s\n",
+                status.row_col_exch ? "Row/Col Exchanged" : "Normal");
+        printf("  Scan Order   : %s\n",
+                status.scan_order ? "Bottom to Top" : "Top to Bottom");
+        printf("  H. Order     : %s\n",
+                status.horiz_order ? "Right to Left" : "Left to Right");
+        //
+        printf("  RGB Order    : %s\n", status.rgb_order ? "BGR" : "RGB");
+        printf("  Pixel Fmt    : %s\n",
+                status.if_pixel_fmt == IPF_12BPP_4_4_4 ? "4-4-4" :
+                status.if_pixel_fmt == IPF_16BPP_5_6_5 ? "5-6-5" :
+                status.if_pixel_fmt == IPF_18BPP_6_6_6 ? "6-6-6" : "Invalid");
+        printf("\n");
+        return status;
+    }
+
+    void enter_sleep() {
+        printf("> Enter Sleep...\n");
+        simple_cmd(CMD_MODE_SLEEP_IN);
+        sleep_ms(5);
+    }
+
+    void exit_sleep() {
+        printf("> Exit Sleep...\n");
+        simple_cmd(CMD_MODE_SLEEP_OUT);
+        sleep_ms(5);
+    }
+
+    void display_on() {
+        printf("> Display On...\n");
+        simple_cmd(CMD_DISPLAY_ON);
+        sleep_ms(5);
+    }
+
+    void display_off() {
+        printf("> Display Off...\n");
+        simple_cmd(CMD_DISPLAY_OFF);
+        sleep_ms(5);
+    }
+
+    void backlight_on(int pct) {
+        printf("> Backlight On %d%%...\n", pct);
+        if (pct <= 0) {
+            backlight_off();
+            return;
+        }
+        else if (pct >= 100) {
+            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+            pwm_set_enabled(pwm_slice, false);
+            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
+            gpio_put(LCD_LED_PIN, 0);
+        }
+        else {
+            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_PWM);
+            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+            pwm_set_wrap(pwm_slice, 99);
+            pwm_set_enabled(pwm_slice, true);
+            pwm_set_gpio_level(LCD_LED_PIN, 100 - pct);
+        }
+    }
+
+    void backlight_off() {
+        printf("> Backlight Off...\n");
+        auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+        pwm_set_enabled(pwm_slice, false);
+        gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
+        gpio_put(LCD_LED_PIN, 1);
+    }
+
+    void set_idle_mode(bool enabled) {
+        printf("> Idle Mode = %s\n", enabled ? "On" : "Off");
+        simple_cmd(enabled ? CMD_IDLE_ON : CMD_IDLE_OFF);
+    }
+
+    void set_inversion(bool enabled) {
+        printf("> Inversion = %s\n", enabled ? "On" : "Off");
+        simple_cmd(enabled ? CMD_INVERT_ON : CMD_INVERT_OFF);
+    }
+
+    void set_gamma(int idx) {
+        printf("> Gamma Curve = %d\n", idx);
+        simple_cmd_write<uint8_t>(CMD_GAMMA_SET, 1 << (idx & 3));
+    }
+
+    void set_brightness(uint8_t brightness) {
+        printf("> Brightness = %d\n", brightness);
+        simple_cmd_write(CMD_BRIGHTNESS_WRITE, brightness);
+    }
+
+    void begin_frame() {
+        select_command();
+        write(CMD_MEMORY_WRITE);
+        deselect();
+    }
+
+    void write_frame(const Pixel *pixels, size_t n_pixels) {
+        select_data();
+        write(pixels, sizeof(Pixel) * n_pixels);
+        deselect();
+    }
+
+    Pixel* frame_ptr() {
+        return currentFrame;
+    }
+
+    void write_frame() {
+        select_command();
+        write(CMD_MEMORY_WRITE);
+        select_data();
+        write(currentFrame, sizeof(Pixel) * WIDTH * HEIGHT);
+        deselect();
+    }
+
+    void begin_swap() {
+        if (currentFrame == frame1) {
+            // printf("? begin_swap 1 -> 2\n");
+            currentFrame = frame2;
+            backFrame = frame1;
+        }
+        else {
+            // printf("? begin_swap 2 -> 1\n");
+            currentFrame = frame1;
+            backFrame = frame2;
+        }
+    }
+
+    void end_swap() {
+        // printf("? end_swap\n");
+        select_command();
+        write(CMD_MEMORY_WRITE);
+        select_data();
+        write(backFrame, sizeof(Pixel) * WIDTH * HEIGHT);
+        deselect();
+    }
+
+    void fill_rect(int left, int right, int top, int bottom, Pixel color) {
+        if (left > right) {
+            const auto tmp = left;
+            left = right;
+            right = tmp;
+        }
+        if (top > bottom) {
+            const auto tmp = top;
+            top = bottom;
+            bottom = tmp;
+        }
+        if (left < 0) left = 0;
+        if (right >= WIDTH) right = WIDTH - 1;
+        if (top < 0) top = 0;
+        if (bottom >= HEIGHT) bottom = HEIGHT - 1;
+        for (int y = top; y <= bottom; y++) {
+            auto* ptr = &currentFrame[y * WIDTH];
+            for (int x = left; x <= right; x++) {
+                ptr[x] = color;
+            }
+        }
+    }
+
+    void copy(int left, int right, int top, int bottom, Pixel pixels[]) {
+        if (left > right || top > bottom) return;
+        const auto stride = right - left + 1;
+        if (left < 0) {
+            pixels = &pixels[-left];
+            left = 0;
+        }
+        if (right >= WIDTH) {
+            right = WIDTH - 1;
+        }
+        if (top < 0) {
+            pixels = &pixels[-top * stride];
+            top = 0;
+        }
+        if (bottom >= HEIGHT) {
+            bottom = HEIGHT - 1;
+        }
+        const int width = right - left + 1;
+        const int height = bottom - top + 1;
+        for (int y = 0; y < height; y++) {
+            const auto* src_ptr = &pixels[y * stride];
+            auto* dst_ptr = &currentFrame[(top + y) * WIDTH];
+            for (int x = 0; x < width; x++) {
+                dst_ptr[left + x] = src_ptr[x];
+            }
+        }
+    }
+
+}
