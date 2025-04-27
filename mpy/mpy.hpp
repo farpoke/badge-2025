@@ -4,5 +4,6 @@ namespace mpy
 {
 
     void init();
+    void repl();
 
 }

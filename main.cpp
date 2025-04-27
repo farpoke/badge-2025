@@ -132,6 +132,8 @@ void draw_frame()
         sleep_ms(1);
     }
 
+    mpy::repl();
+
     printf("> Main loop...\n");
     bool active = true;
     while(true) {

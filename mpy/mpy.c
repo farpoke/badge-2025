@@ -1,5 +1,8 @@
 #include <py/gc.h>
+#include <py/lexer.h>
+#include <py/mperrno.h>
 #include <py/runtime.h>
+
 #include <shared/runtime/gchelper.h>
 
 #ifndef NO_QSTR
@@ -25,11 +28,20 @@ void nlr_jump_fail(void *val) {
 }
 
 int __attribute__((used)) mp_hal_stdin_rx_chr() {
-    return tud_cdc_read_char();
+    int ch = -1;
+    while (ch == -1) {
+        tud_task();
+        ch = tud_cdc_read_char();
+    }
+    return ch;
 }
 
 mp_uint_t __attribute__((used)) mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     tud_cdc_write(str, len);
     tud_cdc_write_flush();
     return len;
+}
+
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
+    mp_raise_OSError(MP_ENOENT);
 }

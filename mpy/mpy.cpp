@@ -11,6 +11,8 @@ extern "C" {
 #include <py/runtime.h>
 #include <py/stackctrl.h>
 
+#include <shared/runtime/pyexec.h>
+
 }
 
 namespace mpy
@@ -22,6 +24,10 @@ namespace mpy
         mp_stack_ctrl_init();
         gc_init(_heap, _heap + sizeof(_heap));
         mp_init();
+    }
+
+    void repl() {
+        pyexec_friendly_repl();
     }
 
 }
