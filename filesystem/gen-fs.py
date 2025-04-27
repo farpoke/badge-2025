@@ -4,6 +4,7 @@ import string
 import struct
 import datetime
 import enum
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from textwrap import dedent, wrap
@@ -17,9 +18,12 @@ from textwrap import dedent, wrap
 # http://elm-chan.org/docs/fat_e.html
 
 
-BLOCK_COUNT = 16
-
+BLOCK_COUNT = 256
 IMAGE_SIZE = BLOCK_COUNT * 512
+FAT_SIZE = BLOCK_COUNT + BLOCK_COUNT // 2
+FAT_SIZE_SECTORS = (FAT_SIZE + 511) // 512
+
+assert FAT_SIZE_SECTORS == 1
 
 VOLUME_ID = int(datetime.datetime.now(datetime.UTC).timestamp()) & 0xFFFFFFFF
 VOLUME_NAME = 'BADGE'
@@ -48,11 +52,6 @@ def assemble_bytes(parts):
 
 @dataclass
 class BootSector:
-    n_sectors: int = BLOCK_COUNT
-    """ Total number of sectors. Max 2**16-1 for FAT12/16 volume. """
-
-    n_fat_sectors: int = 1
-    """ FAT size in sectors. """
 
     media_type: int = 0xF8
     """ Derelict media type enumeration. 0xF8 is "standard value for non-removable disks". """
@@ -76,9 +75,9 @@ class BootSector:
             ('H', 1),  # Sectors in reserved area.
             ('B', 1),  # Number of FATs. We only have a single copy.
             ('H', 16),  # Number of entries in the root directory (16 entries of 32 bytes = 512 byte sector).
-            ('H', self.n_sectors),
+            ('H', BLOCK_COUNT),  # Total number of sectors. Max 2**16-1 for FAT12/16 volume.
             ('B', self.media_type),
-            ('H', self.n_fat_sectors),
+            ('H', FAT_SIZE_SECTORS),  # FAT size in sectors.
             ('H', 1),  # Sectors per track. Not relevant.
             ('H', 1),  # Number of heads. Not relevant.
             ('I', 0),  # Number of "hidden" physical sectors between this boot sector and the FAT volume.
@@ -242,11 +241,11 @@ class Filesystem:
         self.boot_sector = BootSector()
 
         self.table = [
-                         # First two entries are special.
-                         0xF00 | self.boot_sector.media_type,
-                         END_OF_CHAIN,
-                         # Remaining clusters are unused for now.
-                     ] + [0] * (BLOCK_COUNT - 3)
+            # First two entries are special.
+            0xF00 | self.boot_sector.media_type,
+            END_OF_CHAIN,
+            # Remaining clusters are unused for now.
+        ] + [0] * (BLOCK_COUNT - 2)
 
         self.root_entries = [
             DirectoryEntry(long_name=self.boot_sector.volume_name, flags=DirEntryFlags.VOLUME_ID),
@@ -281,20 +280,26 @@ class Filesystem:
                 ((hi >> 8) & 0xF) | ((lo & 0xF) << 4),
                 (lo >> 4) & 0xFF,
             ])
-        return bytes(table_bytes)
+        data = bytes(table_bytes)
+        assert len(data) == FAT_SIZE, f'Expected FAT data to be {FAT_SIZE} bytes, but is {len(data)}'
+        return data
 
-    def add_file(self, name: str, content: bytes | None = None, flags: int = 0):
-        if content is None:
-            path = FILES_ROOT / name
-            assert path.is_file()
-            content = path.read_bytes()
+    def add_file(self, name: str):
+        path = Path(name).resolve()
+        assert path.is_file(), f'Path "{path}" is not a file'
+        content = path.read_bytes()
+
+        flags = DirEntryFlags.ARCHIVE
+
+        if path.name == 'hidden.txt':
+            flags = DirEntryFlags.HIDDEN | DirEntryFlags.SYSTEM
 
         n_clusters = (len(content) + 511) // 512
         clusters = self._claim_clusters(n_clusters)
 
         entry = DirectoryEntry(
-            long_name=name,
-            flags=DirEntryFlags.ARCHIVE | flags,
+            long_name=path.name,
+            flags=flags,
             cluster=clusters[0],
             size=len(content)
         )
@@ -309,16 +314,16 @@ class Filesystem:
             else:
                 self.data[cluster - 2] = content[i * 512:]
 
-        print(f'File {name} ({len(content)} bytes) stored at {repr(clusters)}')
+        print(f'File {path.relative_to(ROOT, walk_up=True)} ({len(content)} bytes) stored in {len(clusters)} cluster(s)')
 
     def to_bytes(self):
-        self.boot_sector.n_root_entries = len(self.root_entries)
         image_bytes = self.boot_sector.to_bytes()
 
         fat = self._encode_fat12()
         fat = fat.ljust(512, b'\0')
         image_bytes += fat
 
+        assert len(self.root_entries) <= 16, f'Too many root entries, {len(self.root_entries)} > 16'
         root_bytes = b''.join(entry.to_bytes() for entry in self.root_entries)
         root_bytes = root_bytes.ljust(512, b'\0')
         image_bytes += root_bytes
@@ -330,8 +335,7 @@ class Filesystem:
                 assert isinstance(data, bytes) and 1 <= len(data) <= 512
                 image_bytes += data.ljust(512, b'\0')
 
-        assert len(image_bytes) == BLOCK_COUNT * 512, \
-            f'Final image is {len(image_bytes)} bytes, expected {BLOCK_COUNT * 512} bytes'
+        assert len(image_bytes) == IMAGE_SIZE, f'Final image is {len(image_bytes)} bytes, expected {IMAGE_SIZE} bytes'
         return image_bytes
 
 
@@ -359,8 +363,9 @@ def format_cpp_file(data: bytes) -> str:
 
 def run():
     fs = Filesystem()
-    fs.add_file('README.md')
-    fs.add_file('hidden.txt', flags=DirEntryFlags.HIDDEN | DirEntryFlags.SYSTEM)
+
+    for arg in sys.argv[1:]:
+        fs.add_file(arg)
 
     image_bytes = fs.to_bytes()
 
