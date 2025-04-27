@@ -8,8 +8,38 @@ set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(MICROPY_QSTRDEFS_PORT "${MICROPY_PORT_DIR}/qstrdefsport.h")
 
 # Collect a list of sources for our micropython port:
-string(JOIN MICROPY_SOURCE_PORT " "
-        system.cpp
+set(MICROPY_SOURCE_PORT
+        "${MICROPY_PORT_DIR}/mpy.c"
+        "${MICROPY_PORT_DIR}/mpy.cpp"
+)
+
+# Collect a list of micropython library sources:
+set(MICROPY_SOURCE_LIB
+        # ${MICROPY_DIR}/lib/littlefs/lfs1.c
+        # ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
+        # ${MICROPY_DIR}/lib/littlefs/lfs2.c
+        # ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+        # ${MICROPY_DIR}/lib/oofatfs/ff.c
+        # ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+        ${MICROPY_DIR}/shared/readline/readline.c
+        ${MICROPY_DIR}/shared/runtime/gchelper_native.c
+        ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
+        ${MICROPY_DIR}/shared/runtime/interrupt_char.c
+        ${MICROPY_DIR}/shared/runtime/mpirq.c
+        ${MICROPY_DIR}/shared/runtime/pyexec.c
+        ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
+        # ${MICROPY_DIR}/shared/runtime/softtimer.c
+        ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+        ${MICROPY_DIR}/shared/timeutils/timeutils.c
+)
+
+# Collect a list of sources for string interning:
+set(MICROPY_SOURCE_QSTR
+        ${MICROPY_SOURCE_PY}
+        ${MICROPY_SOURCE_EXTMOD}
+        ${MICROPY_SOURCE_USERMOD}
+        ${MICROPY_SOURCE_LIB}
+        ${MICROPY_SOURCE_PORT}
 )
 
 # Tell the pico SDK we want to use the micropython float implementation.
@@ -55,16 +85,13 @@ target_sources(${MICROPY_TARGET} PRIVATE
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
         ${MICROPY_SOURCE_LIB}
-        ${MICROPY_SOURCE_DRIVERS}
         ${MICROPY_SOURCE_PORT}
-        ${MICROPY_SOURCE_BOARD}
 )
 target_link_libraries(${MICROPY_TARGET} usermod)
 target_include_directories(${MICROPY_TARGET} PRIVATE
         ${MICROPY_INC_CORE}
         ${MICROPY_INC_USERMOD}
-        ${MICROPY_BOARD_DIR}
-        "${MICROPY_PORT_DIR}"
+        ${MICROPY_PORT_DIR}
         "${CMAKE_BINARY_DIR}"
 )
 
@@ -75,12 +102,4 @@ set_source_files_properties(
             ${MICROPY_PY_DIR}/vm.c
         PROPERTIES
             COMPILE_OPTIONS "-O2"
-)
-
-# Collect a list of sources for string interning:
-set(MICROPY_SOURCE_QSTR
-        ${MICROPY_SOURCE_PY}
-        ${MICROPY_SOURCE_EXTMOD}
-        ${MICROPY_SOURCE_USERMOD}
-        ${MICROPY_SOURCE_PORT}
 )

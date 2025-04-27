@@ -76,8 +76,9 @@ target_link_libraries(${MICROPY_TARGET}
         pico_stdlib
         pico_bootsel_via_double_reset
         pico_time
-        hardware_spi
+        hardware_irq
         hardware_pwm
+        hardware_spi
         tinyusb_device
 )
 

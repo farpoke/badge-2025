@@ -22,6 +22,7 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
     if (load_eject) {
         if (start) {
             // load disk storage
+            ejected = false;
         } else {
             // unload disk storage
             ejected = true;
@@ -35,7 +36,7 @@ bool tud_msc_test_unit_ready_cb(uint8_t lun) {
     (void)lun;
 
     if (ejected) {
-        // If we've been told to eject, then tell the host that we're not ready any more.
+        // If we've been told to eject, then tell the host that we're not ready anymore.
         tud_msc_set_sense(lun, SCSI_SENSE_NOT_READY, 0x3a, 0x00);
         return false;
     }
