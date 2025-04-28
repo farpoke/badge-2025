@@ -190,35 +190,36 @@ namespace lcd
         return to_pixel(gray, gray, gray);
     }
 
-    void init();
-    void reset();
+    namespace internal
+    {
 
-    DisplayID read_id();
-    DisplayStatus read_status();
+        void init();
+        void reset();
 
-    void enter_sleep();
-    void exit_sleep();
+        DisplayID read_id();
+        DisplayStatus read_status();
 
-    void display_on();
-    void display_off();
+        void enter_sleep();
+        void exit_sleep();
+
+        void display_on();
+        void display_off();
+
+        void set_idle_mode(bool enabled);
+        void set_inversion(bool enabled);
+        void set_gamma(int idx);
+
+        void begin_swap();
+        void end_swap();
+
+    }
 
     void backlight_on(int pct);
     void backlight_off();
 
-    void set_idle_mode(bool enabled);
-    void set_inversion(bool enabled);
-    void set_gamma(int idx);
-
-    void begin_frame();
-    void write_frame(const Pixel *pixels, size_t n_pixels);
-
-    Pixel* frame_ptr();
-
-    void begin_swap();
-    void end_swap();
+    Pixel* get_offscreen_ptr_unsafe();
 
     void fill_rect(int left, int right, int top, int bottom, Pixel color);
-
-    void copy(int left, int right, int top, int bottom, Pixel pixels[]);
+    void copy(int left, int right, int top, int bottom, const Pixel* pixels);
 
 }

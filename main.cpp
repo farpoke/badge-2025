@@ -7,11 +7,12 @@
 #include <tusb.h>
 
 #include "buttons.hpp"
+#include "core1.hpp"
 #include "font.hpp"
-#include "lcd.hpp"
-#include "usb/usb.hpp"
-#include "mpy/mpy.hpp"
 #include "gfx/image.hpp"
+#include "lcd.hpp"
+#include "mpy/mpy.hpp"
+#include "usb/usb.hpp"
 
 static constexpr auto TABLE_SIZE_POWER = 10;
 static constexpr auto TABLE_SIZE = 1 << TABLE_SIZE_POWER;
@@ -53,56 +54,11 @@ void draw_frame()
     static int frame = 0;
     frame++;
 
-    auto ptr = lcd::frame_ptr();
+    auto* ptr = lcd::get_offscreen_ptr_unsafe();
+
     for (size_t row = 0; row < lcd::HEIGHT; row++)
         for (size_t col = 0; col < lcd::WIDTH; col++)
             *ptr++ = color(row, col, frame);
-}
-
-[[noreturn]] void __attribute__ ((naked)) isr_hardfault()
-{
-    uint32_t sp, lr, ipsr;
-    asm volatile("mov %0, sp" : "=r"(sp));
-    asm volatile("mov %0, lr" : "=r"(lr));
-    asm volatile("mrs %0, ipsr" : "=r"(ipsr));
-
-    const auto *stack = reinterpret_cast<uint32_t *>(sp);
-    const auto r0 = stack[0];
-    const auto r1 = stack[1];
-    const auto r2 = stack[2];
-    const auto r3 = stack[3];
-    const auto r12 = stack[4];
-    const auto old_lr = stack[5];
-    const auto ret_addr = stack[6];
-    const auto xspr = stack[7];
-
-    const auto cpuid = *reinterpret_cast<uint32_t *>(0xD0000000);
-    const auto icsr = scb_hw->icsr;
-    printf(
-        "\n"
-        "\n"
-        "! CORE %d HARDFAULT  !\n"
-        "! ICSR = 0x%08x !\n"
-        "! SP   = 0x%08x !\n"
-        "! LR'  = 0x%08x !\n"
-        "! R0   = 0x%08x !\n"
-        "! R1   = 0x%08x !\n"
-        "! R2   = 0x%08x !\n"
-        "! R3   = 0x%08x !\n"
-        "! R12  = 0x%08x !\n"
-        "! LR   = 0x%08x !\n"
-        "! Ret. = 0x%08x !\n"
-        "! xPSR = 0x%08x !\n"
-        "! IPSR = 0x%08x !\n"
-        "\n"
-        "\n",
-        cpuid, icsr,
-        sp, lr,
-        r0, r1, r2, r3, r12, old_lr, ret_addr, xspr,
-        ipsr
-    );
-
-    while (true) tight_loop_contents();
 }
 
 [[noreturn]] int main()
@@ -116,23 +72,21 @@ void draw_frame()
 
     init_sin_table();
 
-    lcd::init();
-    lcd::exit_sleep();
-    lcd::display_on();
-    lcd::read_id();
-    lcd::read_status();
+    stdio_flush();
 
-    lcd::begin_frame();
-    lcd::write_frame(reinterpret_cast<const lcd::Pixel*>(IMAGE_DATA), lcd::WIDTH * lcd::HEIGHT);
+    core1::reset_and_launch();
 
-    lcd::backlight_on(20);
+    lcd::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, reinterpret_cast<const lcd::Pixel*>(IMAGE_DATA));
+    core1::swap_frame();
 
-    for (int i = 0; i < 1000; i++) {
+    printf("> Splash screen wait...\n");
+    const auto start = get_absolute_time();
+    while (absolute_time_diff_us(start, get_absolute_time()) < 1'000'000) {
         tud_task();
-        sleep_ms(1);
+        tight_loop_contents();
     }
 
-    mpy::repl();
+    // mpy::repl();
 
     printf("> Main loop...\n");
     bool active = true;
@@ -176,9 +130,6 @@ void draw_frame()
         y += 22;
         font::noto_sans_cm.draw(x, y, "\"Noto Sans Condensed Medium\" Hello world!");
 
-        lcd::begin_swap();
-        lcd::end_swap();
-
-        // sleep_ms(10);
+        core1::swap_frame();
     }
 }

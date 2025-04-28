@@ -14,13 +14,10 @@
 
 #define LCD_SPI_DELAY() do{ asm volatile ("nop"); }while(0)
 
-namespace lcd::internal {
-
-    Pixel frame1[FRAME_SIZE] __attribute__((used));
-    Pixel frame2[FRAME_SIZE] __attribute__((used));
-
-    Pixel *currentFrame = frame1;
-    Pixel *backFrame = frame2;
+namespace lcd::internal
+{
+    Pixel *_onScreenFrame = nullptr;
+    Pixel *_offScreenFrame = nullptr;
 
     void wait_for_spi() {
         while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
@@ -135,11 +132,6 @@ namespace lcd::internal {
         return result;
     }
 
-}
-
-namespace lcd {
-    using namespace internal;
-
     void init() {
         printf("> lcd::init ");
         
@@ -192,13 +184,17 @@ namespace lcd {
         simple_cmd_write(CMD_COL_ADDRESS, Address(COL_OFFSET, WIDTH + COL_OFFSET - 1));
         simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
 
+        if (_onScreenFrame == nullptr)
+            _onScreenFrame = new Pixel[WIDTH * HEIGHT];
+
+        if (_offScreenFrame == nullptr)
+            _offScreenFrame = new Pixel[WIDTH * HEIGHT];
+
         for (int i = 0; i < WIDTH * HEIGHT; i++) {
-            frame1[i] = to_pixel(255, 0, 0);
-            frame2[i] = to_pixel(0, 255, 0);
+            _onScreenFrame[i] = to_pixel(255, 0, 0);
+            _offScreenFrame[i] = to_pixel(0, 255, 0);
         }
-        currentFrame = frame1;
-        backFrame = frame2;
-        end_swap();
+        end_swap(); // This should make the entire screen red until something else is written to it.
 
         printf("OK\n");
     }
@@ -275,35 +271,6 @@ namespace lcd {
         sleep_ms(5);
     }
 
-    void backlight_on(int pct) {
-        printf("> Backlight On %d%%...\n", pct);
-        if (pct <= 0) {
-            backlight_off();
-            return;
-        }
-        else if (pct >= 100) {
-            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
-            pwm_set_enabled(pwm_slice, false);
-            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
-            gpio_put(LCD_LED_PIN, 0);
-        }
-        else {
-            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_PWM);
-            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
-            pwm_set_wrap(pwm_slice, 99);
-            pwm_set_enabled(pwm_slice, true);
-            pwm_set_gpio_level(LCD_LED_PIN, 100 - pct);
-        }
-    }
-
-    void backlight_off() {
-        printf("> Backlight Off...\n");
-        auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
-        pwm_set_enabled(pwm_slice, false);
-        gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
-        gpio_put(LCD_LED_PIN, 1);
-    }
-
     void set_idle_mode(bool enabled) {
         printf("> Idle Mode = %s\n", enabled ? "On" : "Off");
         simple_cmd(enabled ? CMD_IDLE_ON : CMD_IDLE_OFF);
@@ -324,41 +291,10 @@ namespace lcd {
         simple_cmd_write(CMD_BRIGHTNESS_WRITE, brightness);
     }
 
-    void begin_frame() {
-        select_command();
-        write(CMD_MEMORY_WRITE);
-        deselect();
-    }
-
-    void write_frame(const Pixel *pixels, size_t n_pixels) {
-        select_data();
-        write(pixels, sizeof(Pixel) * n_pixels);
-        deselect();
-    }
-
-    Pixel* frame_ptr() {
-        return currentFrame;
-    }
-
-    void write_frame() {
-        select_command();
-        write(CMD_MEMORY_WRITE);
-        select_data();
-        write(currentFrame, sizeof(Pixel) * WIDTH * HEIGHT);
-        deselect();
-    }
-
     void begin_swap() {
-        if (currentFrame == frame1) {
-            // printf("? begin_swap 1 -> 2\n");
-            currentFrame = frame2;
-            backFrame = frame1;
-        }
-        else {
-            // printf("? begin_swap 2 -> 1\n");
-            currentFrame = frame1;
-            backFrame = frame2;
-        }
+        const auto tmp = _onScreenFrame;
+        _onScreenFrame = _offScreenFrame;
+        _offScreenFrame = tmp;
     }
 
     void end_swap() {
@@ -366,8 +302,46 @@ namespace lcd {
         select_command();
         write(CMD_MEMORY_WRITE);
         select_data();
-        write(backFrame, sizeof(Pixel) * WIDTH * HEIGHT);
+        write(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
         deselect();
+    }
+
+}
+
+namespace lcd {
+    using namespace internal;
+
+    void backlight_on(int pct) {
+        printf("> Backlight On %d%%...\n", pct);
+        if (pct <= 0) {
+            backlight_off();
+            return;
+        }
+        else if (pct >= 100) {
+            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+            pwm_set_enabled(pwm_slice, false);
+            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
+            gpio_put(LCD_LED_PIN, false);
+        }
+        else {
+            gpio_set_function(LCD_LED_PIN, GPIO_FUNC_PWM);
+            auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+            pwm_set_wrap(pwm_slice, 99);
+            pwm_set_enabled(pwm_slice, true);
+            pwm_set_gpio_level(LCD_LED_PIN, 100 - pct);
+        }
+    }
+
+    void backlight_off() {
+        printf("> Backlight Off...\n");
+        auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
+        pwm_set_enabled(pwm_slice, false);
+        gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
+        gpio_put(LCD_LED_PIN, true);
+    }
+
+    Pixel* get_offscreen_ptr_unsafe() {
+        return _offScreenFrame;
     }
 
     void fill_rect(int left, int right, int top, int bottom, Pixel color) {
@@ -386,14 +360,14 @@ namespace lcd {
         if (top < 0) top = 0;
         if (bottom >= HEIGHT) bottom = HEIGHT - 1;
         for (int y = top; y <= bottom; y++) {
-            auto* ptr = &currentFrame[y * WIDTH];
+            auto* ptr = &_offScreenFrame[y * WIDTH];
             for (int x = left; x <= right; x++) {
                 ptr[x] = color;
             }
         }
     }
 
-    void copy(int left, int right, int top, int bottom, Pixel pixels[]) {
+    void copy(int left, int right, int top, int bottom, const Pixel* pixels) {
         if (left > right || top > bottom) return;
         const auto stride = right - left + 1;
         if (left < 0) {
@@ -414,7 +388,7 @@ namespace lcd {
         const int height = bottom - top + 1;
         for (int y = 0; y < height; y++) {
             const auto* src_ptr = &pixels[y * stride];
-            auto* dst_ptr = &currentFrame[(top + y) * WIDTH];
+            auto* dst_ptr = &_offScreenFrame[(top + y) * WIDTH];
             for (int x = 0; x < width; x++) {
                 dst_ptr[left + x] = src_ptr[x];
             }

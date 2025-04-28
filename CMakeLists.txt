@@ -53,9 +53,11 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 # Create target executable with our sources.
 add_executable(${MICROPY_TARGET}
         main.cpp
+        core1.cpp
         buttons.cpp
         lcd.cpp
         font.cpp
+        irq.cpp
         usb/usb.cpp
         usb/usb-descriptors.cpp
 )
@@ -76,9 +78,11 @@ target_link_libraries(${MICROPY_TARGET}
         pico_stdlib
         pico_bootsel_via_double_reset
         pico_time
+        pico_multicore
         hardware_irq
         hardware_pwm
         hardware_spi
+        hardware_sync
         tinyusb_device
 )
 
@@ -97,3 +101,18 @@ pico_add_extra_outputs(${MICROPY_TARGET})
 
 # Include the micropython build script and commands.
 include(${MICROPY_PY_DIR}/mkrules.cmake)
+
+# Ask the toolchain to give us a disassembled output file.
+pico_get_runtime_output_directory(${MICROPY_TARGET} output_path)
+add_custom_command(
+        TARGET
+            ${MICROPY_TARGET}
+        POST_BUILD
+        COMMAND
+            ${CMAKE_OBJDUMP}
+        ARGS
+            -xSC
+            $<TARGET_FILE:${MICROPY_TARGET}>
+            > ${output_path}$<IF:$<BOOL:$<TARGET_PROPERTY:${MICROPY_TARGET},OUTPUT_NAME>>,$<TARGET_PROPERTY:${MICROPY_TARGET},OUTPUT_NAME>,$<TARGET_PROPERTY:${MICROPY_TARGET},NAME>>.txt
+        VERBATIM
+)

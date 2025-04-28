@@ -1,5 +1,8 @@
 #include "font.hpp"
 
+#include <cstring>
+#include <memory>
+
 #include "font_data.hpp"
 
 #include "fonts/cpp/lucida.hpp"
@@ -42,10 +45,8 @@ namespace font
         const int text_width = right - left + 1;
         const int text_height = bottom - top + 1;
 
-        Pixel text_pixels[text_width * text_height];
-        for (auto &pixel : text_pixels) {
-            pixel = 0;
-        }
+        auto text_pixels = std::unique_ptr<Pixel[]>(new Pixel[text_width * text_height]);
+        memset(text_pixels.get(), 0, text_width * text_height * sizeof(Pixel));
 
         if (data.bpp == 1) {
             constexpr auto pixels_per_value = sizeof(data::GlyphDataType) * 8;
@@ -111,7 +112,7 @@ namespace font
             }
         }
 
-        lcd::copy(left, right, top, bottom, text_pixels);
+        lcd::copy(left, right, top, bottom, text_pixels.get());
     }
 
 }
