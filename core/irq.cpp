@@ -2,6 +2,7 @@
 
 #include <pico.h>
 #include <hardware/irq.h>
+#include <tusb.h>
 
 
 extern "C" [[noreturn]] void __attribute__ ((naked)) isr_handler()
@@ -26,19 +27,19 @@ extern "C" [[noreturn]] void __attribute__ ((naked)) isr_handler()
     printf(
         "\n"
         "\n"
-        "! CORE %d            !\n"
-        "! ICSR = 0x%08x !\n"
-        "! SP   = 0x%08x !\n"
-        "! LR'  = 0x%08x !\n"
-        "! R0   = 0x%08x !\n"
-        "! R1   = 0x%08x !\n"
-        "! R2   = 0x%08x !\n"
-        "! R3   = 0x%08x !\n"
-        "! R12  = 0x%08x !\n"
-        "! LR   = 0x%08x !\n"
-        "! Ret. = 0x%08x !\n"
-        "! xPSR = 0x%08x !\n"
-        "! IPSR = 0x%08x !\n"
+        "! CORE %d IRQ\n"
+        "! ICSR = 0x%08x\n"
+        "! SP   = 0x%08x\n"
+        "! LR'  = 0x%08x\n"
+        "! R0   = 0x%08x\n"
+        "! R1   = 0x%08x\n"
+        "! R2   = 0x%08x\n"
+        "! R3   = 0x%08x\n"
+        "! R12  = 0x%08x\n"
+        "! LR   = 0x%08x\n"
+        "! Ret. = 0x%08x\n"
+        "! xPSR = 0x%08x\n"
+        "! IPSR = 0x%08x\n"
         "\n"
         "\n",
         cpuid, icsr,
@@ -52,6 +53,10 @@ extern "C" [[noreturn]] void __attribute__ ((naked)) isr_handler()
 
 extern "C" [[noreturn]] void __attribute__ ((naked)) isr_hardfault() __attribute__((alias("isr_handler")));
 extern "C" [[noreturn]] void __attribute__ ((naked)) isr_nmi() __attribute__((alias("isr_handler")));
-extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svcall() __attribute__((alias("isr_handler")));
-extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svpend() __attribute__((alias("isr_handler")));
-extern "C" [[noreturn]] void __attribute__ ((naked)) isr_systick() __attribute__((alias("isr_handler")));
+// extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svcall() __attribute__((alias("isr_handler")));
+// extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svpend() __attribute__((alias("isr_handler")));
+// extern "C" [[noreturn]] void __attribute__ ((naked)) isr_systick() __attribute__((alias("isr_handler")));
+
+extern "C" void isr_usbctrl() {
+    tud_int_handler(0);
+}

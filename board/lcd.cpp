@@ -1,10 +1,10 @@
-#include "lcd.hpp"
+#include "board/lcd.hpp"
 
 #include <cstdio>
-#include <pico/stdlib.h>
 #include <hardware/gpio.h>
 #include <hardware/pwm.h>
 #include <hardware/spi.h>
+#include <pico/stdlib.h>
 
 #define WRITE_VALUE(name, value) gpio_put(name, (value) ? 1 : 0)
 #define WRITE_HIGH(name) WRITE_VALUE(name, true)

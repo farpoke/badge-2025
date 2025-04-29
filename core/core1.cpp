@@ -1,4 +1,4 @@
-#include "core1.hpp"
+#include "core/core1.hpp"
 
 #include <cstdio>
 
@@ -7,8 +7,7 @@
 
 #include <hardware/sync.h>
 
-#include "hardware/irq.h"
-#include "lcd.hpp"
+#include "board/lcd.hpp"
 
 namespace
 {

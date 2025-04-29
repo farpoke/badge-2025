@@ -1,23 +1,22 @@
 #pragma once
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace lcd
 {
 
     constexpr int SPI_FREQ = 10'000'000;
 
-    constexpr size_t WIDTH = 128;
-    constexpr size_t HEIGHT = 160;
+    constexpr int WIDTH = 128;
+    constexpr int HEIGHT = 160;
 
     constexpr auto FRAME_SIZE = WIDTH * HEIGHT;
 
     namespace internal
     {
 
-        constexpr size_t COL_OFFSET = 2;
-        constexpr size_t ROW_OFFSET = 1;
+        constexpr int COL_OFFSET = 2;
+        constexpr int ROW_OFFSET = 1;
 
         enum Command : uint8_t
         {
@@ -83,9 +82,9 @@ namespace lcd
         void deselect();
 
         void write(uint8_t byte);
-        void write(const void *data, size_t n_bytes);
+        void write(const void *data, int n_bytes);
 
-        void read(void *buffer, size_t n_bytes);
+        void read(void *buffer, int n_bytes);
 
     }
 

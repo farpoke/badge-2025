@@ -27,8 +27,8 @@ if (EXISTS ${picoVscode})
 endif()
 # ====================================================================================
 
-# Look for the pico board headers in this directory, specifically our `badge-2025.h` header.
-set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR})
+# Look for the pico board headers in the board directory, specifically our `badge-2025.h` header.
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/board)
 set(PICO_BOARD badge-2025 CACHE STRING "Board type")
 
 # Name of our project and target, stored where micropython can find it.
@@ -53,13 +53,13 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 # Create target executable with our sources.
 add_executable(${MICROPY_TARGET}
         main.cpp
-        core1.cpp
-        buttons.cpp
-        lcd.cpp
-        font.cpp
-        irq.cpp
-        usb/usb.cpp
+        board/buttons.cpp
+        board/lcd.cpp
+        core/core1.cpp
+        core/irq.cpp
+        drawing/font.cpp
         usb/usb-descriptors.cpp
+        usb/usb.cpp
 )
 target_include_directories(${MICROPY_TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
@@ -75,10 +75,10 @@ pico_enable_stdio_usb(${MICROPY_TARGET} 0)  # No stdio over USB; we set up our o
 
 # Add libraries to our target from the pico SDK.
 target_link_libraries(${MICROPY_TARGET}
-        pico_stdlib
         pico_bootsel_via_double_reset
-        pico_time
         pico_multicore
+        pico_stdlib
+        pico_time
         hardware_irq
         hardware_pwm
         hardware_spi

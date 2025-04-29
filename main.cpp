@@ -6,11 +6,11 @@
 
 #include <tusb.h>
 
-#include "buttons.hpp"
-#include "core1.hpp"
-#include "font.hpp"
+#include "board/buttons.hpp"
+#include "board/lcd.hpp"
+#include "core/core1.hpp"
+#include "drawing/font.hpp"
 #include "gfx/image.hpp"
-#include "lcd.hpp"
 #include "mpy/mpy.hpp"
 #include "usb/usb.hpp"
 

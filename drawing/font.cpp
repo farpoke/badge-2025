@@ -3,15 +3,15 @@
 #include <cstring>
 #include <memory>
 
-#include "font_data.hpp"
+#include "../fonts/font_data.hpp"
 
-#include "fonts/cpp/lucida.hpp"
-#include "fonts/cpp/m5x7.hpp"
-#include "fonts/cpp/m6x11.hpp"
-#include "fonts/cpp/noto_sans.hpp"
-#include "fonts/cpp/noto_sans_cm.hpp"
+#include "../fonts/cpp/lucida.hpp"
+#include "../fonts/cpp/m5x7.hpp"
+#include "../fonts/cpp/m6x11.hpp"
+#include "../fonts/cpp/noto_sans.hpp"
+#include "../fonts/cpp/noto_sans_cm.hpp"
 
-#include "lcd.hpp"
+#include "../board/lcd.hpp"
 
 namespace font
 {
