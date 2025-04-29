@@ -56,7 +56,3 @@ extern "C" [[noreturn]] void __attribute__ ((naked)) isr_nmi() __attribute__((al
 // extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svcall() __attribute__((alias("isr_handler")));
 // extern "C" [[noreturn]] void __attribute__ ((naked)) isr_svpend() __attribute__((alias("isr_handler")));
 // extern "C" [[noreturn]] void __attribute__ ((naked)) isr_systick() __attribute__((alias("isr_handler")));
-
-extern "C" void isr_usbctrl() {
-    tud_int_handler(0);
-}
