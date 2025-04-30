@@ -3,20 +3,18 @@
 #include <cstring>
 #include <memory>
 
-#include "../fonts/font_data.hpp"
+#include <fonts/font_data.hpp>
+#include <fonts/cpp/lucida.hpp>
+#include <fonts/cpp/m5x7.hpp>
+#include <fonts/cpp/m6x11.hpp>
+#include <fonts/cpp/noto_sans.hpp>
+#include <fonts/cpp/noto_sans_cm.hpp>
 
-#include "../fonts/cpp/lucida.hpp"
-#include "../fonts/cpp/m5x7.hpp"
-#include "../fonts/cpp/m6x11.hpp"
-#include "../fonts/cpp/noto_sans.hpp"
-#include "../fonts/cpp/noto_sans_cm.hpp"
-
-#include "../board/lcd.hpp"
+#include <drawing/drawing.hpp>
 
 namespace font
 {
-
-    using lcd::Pixel;
+    using namespace drawing;
 
     constexpr Font lucida(data::lucida);
     constexpr Font m5x7(data::m5x7);
@@ -74,12 +72,12 @@ namespace font
         }
         else {
             const auto n_colors = 1 << data.bpp;
-            Pixel colors[n_colors];
+            auto colors = std::unique_ptr<Pixel[]>(new Pixel[n_colors]);
             colors[0] = 0;
             colors[n_colors - 1] = ~0;
             for (int i = 1; i < n_colors - 1; i++) {
                 const auto value = (255 / n_colors) * i;
-                colors[i] = lcd::from_grayscale(value);
+                colors[i] = from_grayscale(value);
             }
 
             int x0 = 1;
@@ -112,7 +110,7 @@ namespace font
             }
         }
 
-        lcd::copy(left, right, top, bottom, text_pixels.get());
+        copy(left, right, top, bottom, text_pixels.get());
     }
 
 }

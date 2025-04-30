@@ -103,3 +103,12 @@ set_source_files_properties(
         PROPERTIES
             COMPILE_OPTIONS "-O2"
 )
+
+# Tell the compiler to ignore stack usage for select units.
+set_source_files_properties(
+            ${MICROPY_PY_DIR}/compile.c
+            ${MICROPY_PY_DIR}/objboundmeth.c
+            ${MICROPY_PY_DIR}/objfun.c
+        PROPERTIES
+            COMPILE_OPTIONS "-Wno-stack-usage"
+)

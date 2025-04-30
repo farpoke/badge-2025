@@ -1,4 +1,4 @@
-#include "core/core1.hpp"
+#include "core1.hpp"
 
 #include <cstdio>
 
@@ -7,7 +7,7 @@
 
 #include <hardware/sync.h>
 
-#include "board/lcd.hpp"
+#include <board/lcd.hpp>
 
 namespace
 {
@@ -64,37 +64,8 @@ namespace
 
     CoreSync _sync = {};
 
-    void dumb_irq_handler() {
-        uint32_t ipsr;
-        asm volatile("mrs %0, ipsr" : "=r"(ipsr));
-        printf("\n\n! CORE 1 IRQ - IPSR = 0x%08x\n\n", ipsr);
-    }
-
-    extern "C" uint32_t __StackTop;
-    extern "C" uint32_t __StackBottom;
-    extern "C" uint32_t __StackOneTop;
-    extern "C" uint32_t __StackOneBottom;
-
     [[noreturn]] void core1_main() {
         printf("> Core 1 starting...\n");
-        uint32_t sp;
-        asm volatile("mov %0, sp" : "=r"(sp));
-        printf("  __StackOneTop = 0x%08x\n", reinterpret_cast<intptr_t>(&__StackOneTop));
-        printf("  __StackOneBottom = 0x%08x\n", reinterpret_cast<intptr_t>(&__StackOneBottom));
-        printf("  SP = 0x%08x\n", sp);
-
-        /*
-        for (int i = 0; i <= 25; i++) {
-            const auto current = irq_get_vtable_handler(i);
-            if (current == __unhandled_user_irq) {
-                printf("  Setting IRQ %d\n", i);
-                irq_set_exclusive_handler(i, dumb_irq_handler);
-            }
-            else {
-                printf("  Existing IRQ %d = 0x%08x\n", i, reinterpret_cast<intptr_t>(current));
-            }
-        }
-        */
 
         lcd::internal::init();
         lcd::internal::exit_sleep();
@@ -132,15 +103,10 @@ namespace core1
 {
 
     void reset_and_launch() {
+        printf("> Launching core 1...\n");
+
         // Reset core1 first, in case it's actually running (which it REALLY shouldn't).
         multicore_reset_core1();
-
-        printf("> Launching core 1...\n");
-        uint32_t sp;
-        asm volatile("mov %0, sp" : "=r"(sp));
-        printf("  __StackTop = 0x%08x\n", reinterpret_cast<intptr_t>(&__StackTop));
-        printf("  __StackBottom = 0x%08x\n", reinterpret_cast<intptr_t>(&__StackBottom));
-        printf("  SP = 0x%08x\n", sp);
 
         // Initialize/reset our sync data structure.
         _sync.init();

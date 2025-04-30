@@ -57,12 +57,22 @@ add_executable(${MICROPY_TARGET}
         board/lcd.cpp
         core/core1.cpp
         core/irq.cpp
+        drawing/drawing.cpp
         drawing/font.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
 target_include_directories(${MICROPY_TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+)
+
+target_compile_options(${MICROPY_TARGET} PRIVATE
+        # Ask the compiler to check and warn us about stack usage.
+        -fstack-usage
+        -Wstack-usage=2048
+        # Ask the compiler to be very strict.
+        -Wall
+        -Werror
 )
 
 # Set the target program name and version for the Pico SDK.

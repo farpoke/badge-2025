@@ -2,8 +2,8 @@
 
 #include <tusb.h>
 
-extern const int DISK_IMAGE_SIZE;
-extern const int DISK_IMAGE_BLOCK_COUNT;
+extern const uint32_t DISK_IMAGE_SIZE;
+extern const uint32_t DISK_IMAGE_BLOCK_COUNT;
 extern const uint8_t DISK_IMAGE[];
 
 static bool ejected = false;
@@ -59,13 +59,13 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     (void)lun;
 
     if (lba >= DISK_IMAGE_BLOCK_COUNT) {
-        printf("! MSC: Attempt to read out of bounds (%d, %d, %d, %d)\n", lun, lba, offset, bufsize);
+        printf("! MSC: Attempt to read out of bounds (%d, %ld, %ld, %ld)\n", lun, lba, offset, bufsize);
         return -1;
     }
 
     const auto idx = lba * USB_MSC_BLOCK_SIZE + offset;
     if ((idx + bufsize) > DISK_IMAGE_SIZE) {
-        printf("! MSC: Attempt to read out of bounds (%d, %d, %d, %d)\n", lun, lba, offset, bufsize);
+        printf("! MSC: Attempt to read out of bounds (%d, %ld, %ld, %ld)\n", lun, lba, offset, bufsize);
         return -1;
     }
 
@@ -74,7 +74,7 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
 }
 
 int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *buffer, uint32_t bufsize) {
-    printf("! MSC: Attempt to write (%d, %d, %d, %d)\n", lun, lba, offset, bufsize);
+    printf("! MSC: Attempt to write (%d, %ld, %ld, %ld)\n", lun, lba, offset, bufsize);
     (void)buffer;
     return -1;
 }

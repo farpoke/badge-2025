@@ -218,7 +218,4 @@ namespace lcd
 
     Pixel* get_offscreen_ptr_unsafe();
 
-    void fill_rect(int left, int right, int top, int bottom, Pixel color);
-    void copy(int left, int right, int top, int bottom, const Pixel* pixels);
-
 }

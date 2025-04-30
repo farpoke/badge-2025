@@ -9,6 +9,7 @@
 #include "board/buttons.hpp"
 #include "board/lcd.hpp"
 #include "core/core1.hpp"
+#include "drawing/drawing.hpp"
 #include "drawing/font.hpp"
 #include "gfx/image.hpp"
 #include "mpy/mpy.hpp"
@@ -76,7 +77,7 @@ void draw_frame()
 
     core1::reset_and_launch();
 
-    lcd::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, reinterpret_cast<const lcd::Pixel*>(IMAGE_DATA));
+    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, reinterpret_cast<const lcd::Pixel*>(IMAGE_DATA));
     core1::swap_frame();
 
     printf("> Splash screen wait...\n");

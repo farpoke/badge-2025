@@ -71,8 +71,8 @@ namespace lcd::internal
 
     void write(const void* data, size_t n_bytes) {
         dir_out();
-        auto ptr = reinterpret_cast<const uint8_t*>(data);
-        auto n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
+        const auto   ptr = static_cast<const uint8_t *>(data);
+        const size_t n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::write(..., %d) wrote %d bytes\n", n_bytes, n);
         }
@@ -86,8 +86,8 @@ namespace lcd::internal
     void read(void* buffer, size_t n_bytes, bool dummy_first) {
         dir_in();
         if (dummy_first) clock_cycle();
-        auto ptr = reinterpret_cast<uint8_t*>(buffer);
-        auto n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
+        const auto ptr = static_cast<uint8_t*>(buffer);
+        const size_t n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::read(..., %d, %d) read %d bytes\n", n_bytes, dummy_first, n);
         }
@@ -342,57 +342,6 @@ namespace lcd {
 
     Pixel* get_offscreen_ptr_unsafe() {
         return _offScreenFrame;
-    }
-
-    void fill_rect(int left, int right, int top, int bottom, Pixel color) {
-        if (left > right) {
-            const auto tmp = left;
-            left = right;
-            right = tmp;
-        }
-        if (top > bottom) {
-            const auto tmp = top;
-            top = bottom;
-            bottom = tmp;
-        }
-        if (left < 0) left = 0;
-        if (right >= WIDTH) right = WIDTH - 1;
-        if (top < 0) top = 0;
-        if (bottom >= HEIGHT) bottom = HEIGHT - 1;
-        for (int y = top; y <= bottom; y++) {
-            auto* ptr = &_offScreenFrame[y * WIDTH];
-            for (int x = left; x <= right; x++) {
-                ptr[x] = color;
-            }
-        }
-    }
-
-    void copy(int left, int right, int top, int bottom, const Pixel* pixels) {
-        if (left > right || top > bottom) return;
-        const auto stride = right - left + 1;
-        if (left < 0) {
-            pixels = &pixels[-left];
-            left = 0;
-        }
-        if (right >= WIDTH) {
-            right = WIDTH - 1;
-        }
-        if (top < 0) {
-            pixels = &pixels[-top * stride];
-            top = 0;
-        }
-        if (bottom >= HEIGHT) {
-            bottom = HEIGHT - 1;
-        }
-        const int width = right - left + 1;
-        const int height = bottom - top + 1;
-        for (int y = 0; y < height; y++) {
-            const auto* src_ptr = &pixels[y * stride];
-            auto* dst_ptr = &_offScreenFrame[(top + y) * WIDTH];
-            for (int x = 0; x < width; x++) {
-                dst_ptr[left + x] = src_ptr[x];
-            }
-        }
     }
 
 }
