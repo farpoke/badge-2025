@@ -8,13 +8,17 @@ set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 set(MICROPY_QSTRDEFS_PORT "${MICROPY_PORT_DIR}/qstrdefsport.h")
 
 # Collect a list of sources for our micropython port:
-set(MICROPY_SOURCE_PORT
-        "${MICROPY_PORT_DIR}/mpy.c"
-        "${MICROPY_PORT_DIR}/mpy.cpp"
+list(APPEND MICROPY_SOURCE_PORT
+        ${MICROPY_PORT_DIR}/mpconfigport.h
+        ${MICROPY_PORT_DIR}/mphalport.h
+        ${MICROPY_PORT_DIR}/mpy.c
+        ${MICROPY_PORT_DIR}/mpy.cpp
+        ${MICROPY_PORT_DIR}/mpy.hpp
+        ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
 # Collect a list of micropython library sources:
-set(MICROPY_SOURCE_LIB
+list(APPEND MICROPY_SOURCE_LIB
         # ${MICROPY_DIR}/lib/littlefs/lfs1.c
         # ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
         # ${MICROPY_DIR}/lib/littlefs/lfs2.c
@@ -34,7 +38,7 @@ set(MICROPY_SOURCE_LIB
 )
 
 # Collect a list of sources for string interning:
-set(MICROPY_SOURCE_QSTR
+list(APPEND MICROPY_SOURCE_QSTR
         ${MICROPY_SOURCE_PY}
         ${MICROPY_SOURCE_EXTMOD}
         ${MICROPY_SOURCE_USERMOD}
@@ -106,9 +110,11 @@ set_source_files_properties(
 
 # Tell the compiler to ignore stack usage for select units.
 set_source_files_properties(
+            ${MICROPY_PY_DIR}/builtinimport.c
             ${MICROPY_PY_DIR}/compile.c
             ${MICROPY_PY_DIR}/objboundmeth.c
             ${MICROPY_PY_DIR}/objfun.c
+            ${MICROPY_PY_DIR}/runtime.c
         PROPERTIES
             COMPILE_OPTIONS "-Wno-stack-usage"
 )

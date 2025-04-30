@@ -3,6 +3,7 @@ BasedOnStyle: LLVM
 AccessModifierOffset: -4
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
+AlignConsecutiveMacros: Consecutive
 AlignOperands: true
 AlignTrailingComments: true
 AlwaysBreakTemplateDeclarations: Yes
