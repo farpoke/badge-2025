@@ -11,6 +11,8 @@ set(MICROPY_QSTRDEFS_PORT "${MICROPY_PORT_DIR}/qstrdefsport.h")
 list(APPEND MICROPY_SOURCE_PORT
         ${MICROPY_PORT_DIR}/mpconfigport.h
         ${MICROPY_PORT_DIR}/mphalport.h
+        ${MICROPY_PORT_DIR}/mphalport_stdio.c
+        ${MICROPY_PORT_DIR}/mphalport_time.c
         ${MICROPY_PORT_DIR}/mpy.c
         ${MICROPY_PORT_DIR}/mpy.cpp
         ${MICROPY_PORT_DIR}/mpy.hpp
@@ -19,12 +21,13 @@ list(APPEND MICROPY_SOURCE_PORT
 
 # Collect a list of micropython library sources:
 list(APPEND MICROPY_SOURCE_LIB
-        # ${MICROPY_DIR}/lib/littlefs/lfs1.c
-        # ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
-        # ${MICROPY_DIR}/lib/littlefs/lfs2.c
-        # ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
-        # ${MICROPY_DIR}/lib/oofatfs/ff.c
-        # ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+        ${MICROPY_DIR}/lib/littlefs/lfs1.c
+        ${MICROPY_DIR}/lib/littlefs/lfs1_util.c
+        ${MICROPY_DIR}/lib/littlefs/lfs2.c
+        ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
+        ${MICROPY_DIR}/lib/oofatfs/ff.c
+        ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
+        ${MICROPY_DIR}/ports/rp2/fatfs_port.c
         ${MICROPY_DIR}/shared/readline/readline.c
         ${MICROPY_DIR}/shared/runtime/gchelper_native.c
         ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
@@ -110,6 +113,8 @@ set_source_files_properties(
 
 # Tell the compiler to ignore stack usage for select units.
 set_source_files_properties(
+            ${MICROPY_DIR}/extmod/modframebuf.c
+            ${MICROPY_DIR}/extmod/modre.c
             ${MICROPY_PY_DIR}/builtinimport.c
             ${MICROPY_PY_DIR}/compile.c
             ${MICROPY_PY_DIR}/objboundmeth.c
@@ -118,3 +123,14 @@ set_source_files_properties(
         PROPERTIES
             COMPILE_OPTIONS "-Wno-stack-usage"
 )
+
+# Add some more definitions needed by various parts of the pico/micropython setup.
+target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        FFCONF_H=\"${MICROPY_OOFATFS_DIR}/ffconf.h\"
+)
+
+# Let micropython have a look at the pico SDK targets we want to use.
+foreach(target ${PICO_SDK_TARGETS})
+    micropy_gather_target_properties(${target})
+    micropy_gather_target_properties(${target}_headers)
+endforeach()

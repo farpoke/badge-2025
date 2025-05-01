@@ -59,6 +59,7 @@ add_executable(${MICROPY_TARGET}
         core/irq.cpp
         drawing/drawing.cpp
         drawing/font.cpp
+        filesystem/ffport.c
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
@@ -66,14 +67,26 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
+target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        # Use all 8 KiB of "scratch" memory for the core0 stack.
+        # We will allocate some memory for the core1 stack elsewhere.
+        PICO_STACK_SIZE=0x2000
+        PICO_CORE1_STACK_SIZE=0
+)
+
 target_compile_options(${MICROPY_TARGET} PRIVATE
         # Ask the compiler to check and warn us about stack usage.
         -fstack-usage
-        -Wstack-usage=2048
+        -Wstack-usage=5120
         # Ask the compiler to be very strict.
         -Wall
         -Werror
+        # Ask the compiler to always include debug information.
+        -g
 )
+
+# core1 has a much smaller stack, so warn about much smaller stack usage for that code unit.
+set_source_files_properties(core/core1.cpp PROPERTIES COMPILE_OPTIONS "-Wstack-usage=1024")
 
 # Set the target program name and version for the Pico SDK.
 pico_set_program_name(${MICROPY_TARGET} "badge-2025")
@@ -83,18 +96,32 @@ pico_set_program_version(${MICROPY_TARGET} "0.1")
 pico_enable_stdio_uart(${MICROPY_TARGET} 1) # Enable stdio over UART (with the pins we define in our board header).
 pico_enable_stdio_usb(${MICROPY_TARGET} 0)  # No stdio over USB; we set up our own CDC and MSC interfaces.
 
-# Add libraries to our target from the pico SDK.
-target_link_libraries(${MICROPY_TARGET}
-        pico_bootsel_via_double_reset
-        pico_multicore
-        pico_stdlib
-        pico_time
+# Collect pico SDK libraries we want to use.
+# This is mostly important because we need to tell the micropython CMake code about them later (see mpy.cmake).
+set(PICO_SDK_TARGETS
+        hardware_flash
         hardware_irq
         hardware_pwm
+        hardware_regs
+        hardware_rtc
         hardware_spi
         hardware_sync
+        pico_aon_timer
+        pico_base_headers
+        pico_bootsel_via_double_reset
+        pico_multicore
+        pico_platform
+        pico_platform_compiler
+        pico_platform_panic
+        pico_platform_sections
+        pico_stdlib
+        pico_time
+        pico_util
         tinyusb_device
 )
+
+# Add libraries to our target.
+target_link_libraries(${MICROPY_TARGET} ${PICO_SDK_TARGETS})
 
 # Include our main CMake fragment to setup our micropython port and sources.
 include(mpy/mpy.cmake)

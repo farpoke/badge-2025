@@ -87,7 +87,7 @@ void draw_frame()
         tight_loop_contents();
     }
 
-    // mpy::repl();
+    mpy::repl();
 
     printf("> Main loop...\n");
     bool active = true;

@@ -12,6 +12,10 @@
 namespace
 {
 
+    // Because of how the pico SDK and micropython port is set up, we allocate all the "scratch"
+    // memory to core0 (8 KiB) and put a smaller core1 stack somewhere else in RAM.
+    uint32_t _core1_stack[core1::CORE1_STACK_SIZE / sizeof(uint32_t)];
+
     struct CoreSync {
 
         spin_lock_t *_lock = nullptr;
@@ -112,7 +116,7 @@ namespace core1
         _sync.init();
 
         // Launch core1 code.
-        multicore_launch_core1(core1_main);
+        multicore_launch_core1_with_stack(core1_main, _core1_stack, sizeof(_core1_stack));
 
         // Wait until core1 says it's ready for us to continue.
         _sync.wait_until([]{ return _sync.protected_ready; });
