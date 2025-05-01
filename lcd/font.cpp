@@ -4,13 +4,13 @@
 #include <memory>
 
 #include <fonts/font_data.hpp>
-#include <fonts/cpp/lucida.hpp>
-#include <fonts/cpp/m5x7.hpp>
-#include <fonts/cpp/m6x11.hpp>
-#include <fonts/cpp/noto_sans.hpp>
-#include <fonts/cpp/noto_sans_cm.hpp>
+#include <font-data/lucida.hpp>
+#include <font-data/m5x7.hpp>
+#include <font-data/m6x11.hpp>
+#include <font-data/noto_sans.hpp>
+#include <font-data/noto_sans_cm.hpp>
 
-#include <drawing/drawing.hpp>
+#include <../lcd/drawing.hpp>
 
 namespace font
 {

@@ -30,11 +30,6 @@ VOLUME_NAME = 'BADGE'
 
 VALID_SFN_REGEX = re.compile(r'[A-Z0-9_]+(~\d+)? *([A-Z0-9_]{3}|[A-Z0-9_]{2} |[A-Z0-9_] {2}| {3})')
 
-ROOT = Path(__file__).parent
-FILES_ROOT = ROOT / 'files'
-IMG_OUTPUT_PATH = ROOT / 'disk.img'
-CPP_OUTPUT_PATH = ROOT / 'disk.cpp'
-
 END_OF_CHAIN = 0xFFF
 """ This value as a FAT12 entry indicates that there is no next cluster 
     (i.e. the current entry is the end of the current chain). """
@@ -314,7 +309,7 @@ class Filesystem:
             else:
                 self.data[cluster - 2] = content[i * 512:]
 
-        print(f'File {path.relative_to(ROOT, walk_up=True)} ({len(content)} bytes) stored in {len(clusters)} cluster(s)')
+        print(f'- File {path} ({len(content)} bytes) stored in {len(clusters)} cluster(s)')
 
     def to_bytes(self):
         image_bytes = self.boot_sector.to_bytes()
@@ -341,8 +336,8 @@ class Filesystem:
 
 def format_cpp_file(data: bytes) -> str:
     lines = [
-        '#include "disk.hpp"',
-        '#include "usb/tusb_config.h"',
+        '#include <filesystem/disk.hpp>',
+        '#include <usb/tusb_config.h>',
         '',
         f'constexpr uint32_t DISK_IMAGE_SIZE = {len(data)};',
         'constexpr uint32_t DISK_IMAGE_BLOCK_COUNT = DISK_IMAGE_SIZE / USB_MSC_BLOCK_SIZE;',
@@ -364,17 +359,24 @@ def format_cpp_file(data: bytes) -> str:
 def run():
     fs = Filesystem()
 
-    for arg in sys.argv[1:]:
+    assert len(sys.argv) > 2
+    outdir = Path(sys.argv[1])
+    for arg in sys.argv[2:]:
         fs.add_file(arg)
 
     image_bytes = fs.to_bytes()
 
-    IMG_OUTPUT_PATH.write_bytes(image_bytes)
-    print('Disk image written to', IMG_OUTPUT_PATH)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    img_path = outdir / 'disk.img'
+    cpp_path = outdir / 'disk.cpp'
+
+    img_path.write_bytes(image_bytes)
+    print('Disk image written to', img_path)
 
     cpp_text = format_cpp_file(image_bytes)
-    CPP_OUTPUT_PATH.write_text(cpp_text)
-    print('Disk .cpp data written to', CPP_OUTPUT_PATH)
+    cpp_path.write_text(cpp_text)
+    print('Disk .cpp data written to', cpp_path)
 
 
 if __name__ == '__main__':

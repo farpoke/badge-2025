@@ -1,6 +1,6 @@
 #pragma once
 
-#include <board/lcd.hpp>
+#include <../lcd/lcd.hpp>
 
 namespace drawing
 {

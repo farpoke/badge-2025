@@ -54,11 +54,8 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 add_executable(${MICROPY_TARGET}
         main.cpp
         board/buttons.cpp
-        board/lcd.cpp
         core/core1.cpp
         core/irq.cpp
-        drawing/drawing.cpp
-        drawing/font.cpp
         filesystem/ffport.c
         usb/usb-descriptors.cpp
         usb/usb.cpp
@@ -125,6 +122,9 @@ target_link_libraries(${MICROPY_TARGET} ${PICO_SDK_TARGETS})
 
 # Include our main CMake fragment to setup our micropython port and sources.
 include(mpy/mpy.cmake)
+
+# Include cmake fragment for sources related to the lcd and micropython lcd module.
+include(lcd/lcd.cmake)
 
 # Add some subdirectories containing code generation and utilities.
 # Add the corresponding interface libraries (with source files) to our target.

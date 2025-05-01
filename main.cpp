@@ -7,11 +7,11 @@
 #include <tusb.h>
 
 #include "board/buttons.hpp"
-#include "board/lcd.hpp"
 #include "core/core1.hpp"
-#include "drawing/drawing.hpp"
-#include "drawing/font.hpp"
 #include "gfx/image.hpp"
+#include "lcd/drawing.hpp"
+#include "lcd/font.hpp"
+#include "lcd/lcd.hpp"
 #include "mpy/mpy.hpp"
 #include "usb/usb.hpp"
 

@@ -16,6 +16,7 @@ list(APPEND MICROPY_SOURCE_PORT
         ${MICROPY_PORT_DIR}/mpy.c
         ${MICROPY_PORT_DIR}/mpy.cpp
         ${MICROPY_PORT_DIR}/mpy.hpp
+        ${MICROPY_PORT_DIR}/pendsv.cpp
         ${MICROPY_PORT_DIR}/qstrdefsport.h
 )
 
@@ -35,7 +36,7 @@ list(APPEND MICROPY_SOURCE_LIB
         ${MICROPY_DIR}/shared/runtime/mpirq.c
         ${MICROPY_DIR}/shared/runtime/pyexec.c
         ${MICROPY_DIR}/shared/runtime/stdout_helpers.c
-        # ${MICROPY_DIR}/shared/runtime/softtimer.c
+        ${MICROPY_DIR}/shared/runtime/softtimer.c
         ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
         ${MICROPY_DIR}/shared/timeutils/timeutils.c
 )

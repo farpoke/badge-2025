@@ -1,6 +1,12 @@
+import sys
+from pathlib import Path
+from textwrap import wrap
 from PIL import Image
 
-image = Image.open('./promo-image.png')
+assert len(sys.argv) == 3
+_, in_path, out_path = sys.argv
+
+image = Image.open(in_path)
 w, h = image.size
 
 lcd_data = bytes()
@@ -20,11 +26,18 @@ for y in range(h):
 
         lcd_data += bytes([high_byte, low_byte])
 
-with open('./image.cpp', 'w') as f:
-    f.write('#include "image.hpp"\n')
-    f.write('const unsigned char IMAGE_DATA[] = {')
-    for idx, byte in enumerate(lcd_data):
-        if idx % 32 == 0:
-            f.write('\n    ')
-        f.write(f'0x{byte:02x}, ')
-    f.write('\n};\n')
+hex_data = ', '.join(f'0x{b:02x}' for b in lcd_data)
+hex_lines = wrap(hex_data, 120, initial_indent='    ', subsequent_indent='    ')
+
+cpp_lines = [
+    '#include <gfx/image.hpp>',
+    '',
+    'const unsigned char IMAGE_DATA[] = {',
+    *hex_lines,
+    '};',
+    '',
+]
+
+out_path = Path(out_path)
+out_path.parent.mkdir(parents=True, exist_ok=True)
+out_path.write_text('\n'.join(cpp_lines))

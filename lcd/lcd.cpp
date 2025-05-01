@@ -1,4 +1,4 @@
-#include "board/lcd.hpp"
+#include "lcd.hpp"
 
 #include <cstdio>
 #include <hardware/gpio.h>

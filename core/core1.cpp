@@ -7,7 +7,7 @@
 
 #include <hardware/sync.h>
 
-#include <board/lcd.hpp>
+#include <lcd/lcd.hpp>
 
 namespace
 {

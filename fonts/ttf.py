@@ -9,8 +9,6 @@ CHARSET = ''.join(chr(i) for i in range(32, 127))
 
 GLYPH_DATA_TYPE_BITS = 16
 
-OUT_DIR = Path(__file__).parent / 'cpp'
-
 
 class Glyph:
     ch: str
@@ -47,7 +45,7 @@ class Glyph:
             self.data.append(value)
 
 
-def export_ttf(ttf_path, size, name, bpp):
+def export_ttf(ttf_path: Path, size: int, name: str, bpp: int, out_dir: Path):
     assert re.fullmatch(r'[a-z][a-z0-9_]+', name, re.IGNORECASE)
 
     font = ImageFont.FreeTypeFont(ttf_path, size)
@@ -77,13 +75,13 @@ def export_ttf(ttf_path, size, name, bpp):
             f'  // "{glyph_.ch}"'
         )
 
-    hpp_path = OUT_DIR / (name + '.hpp')
-    cpp_path = OUT_DIR / (name + '.cpp')
+    hpp_path = out_dir / (name + '.hpp')
+    cpp_path = out_dir / (name + '.cpp')
 
     hpp_content = dedent(f'''\
         #pragma once
         
-        #include "font_data.hpp"
+        #include <fonts/font_data.hpp>
         
         namespace font::data
         {{
@@ -128,6 +126,7 @@ def export_ttf(ttf_path, size, name, bpp):
         }}
     ''')
 
+    out_dir.mkdir(parents=True, exist_ok=True)
     hpp_path.write_text(hpp_content)
     cpp_path.write_text(cpp_content)
 
@@ -138,9 +137,10 @@ def run():
     parser.add_argument('size', type=int, help='Size of the font instance to generate, in "font size" units.')
     parser.add_argument('bpp',  type=int, help='Bits per pixel to use when storing the font data.')
     parser.add_argument('path', type=Path, help='Path to TTF file.')
+    parser.add_argument('out',  type=Path, help='Path to output directory.')
 
     args = parser.parse_args()
-    export_ttf(args.path, args.size, args.name, args.bpp)
+    export_ttf(args.path, args.size, args.name, args.bpp, args.out)
 
 
 if __name__ == '__main__':
