@@ -14,6 +14,9 @@ extern "C" {
 
     void init_time(void);
 
+    uint8_t __StackTop; // NOLINT(*-reserved-identifier)
+    uint8_t __StackBottom; // NOLINT(*-reserved-identifier)
+
 }
 
 namespace mpy
@@ -23,7 +26,7 @@ namespace mpy
 
     void init() {
         init_time();
-        mp_stack_ctrl_init();
+        mp_cstack_init_with_top(&__StackTop, &__StackTop - &__StackBottom);
         gc_init(_heap, _heap + sizeof(_heap));
         mp_init();
     }
