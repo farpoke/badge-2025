@@ -18,12 +18,12 @@ from textwrap import dedent, wrap
 # http://elm-chan.org/docs/fat_e.html
 
 
-BLOCK_COUNT = 256
+BLOCK_COUNT = 340  # This is the largest amount where the FAT still fits in one sector.
 IMAGE_SIZE = BLOCK_COUNT * 512
 FAT_SIZE = BLOCK_COUNT + BLOCK_COUNT // 2
 FAT_SIZE_SECTORS = (FAT_SIZE + 511) // 512
 
-assert FAT_SIZE_SECTORS == 1
+assert FAT_SIZE_SECTORS == 1, f'FAT takes up {FAT_SIZE_SECTORS} sectors, but we want it to remain in one'
 
 VOLUME_ID = int(datetime.datetime.now(datetime.UTC).timestamp()) & 0xFFFFFFFF
 VOLUME_NAME = 'BADGE'

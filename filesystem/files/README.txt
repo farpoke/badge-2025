@@ -3,13 +3,18 @@
 
                     🔗 https://hack.gbgay.com
 
-This is the badge for the HackGBGay event of 2025. Aside from this USB drive,
-the badge also presents a USB COM port with a Python REPL for interacting with
-the badge.
+This is the badge for the HackGBGay event of 2025.
 
-The firmware sources for the badge, including this file and others, will be
-available on GitHub. Because the sources might include some of the flags, the
-repository is private until after the event.
+The microcontroller on the badge is a Raspberry Pi RP2040 chip, featuring two
+ARM Cortex-M0+ cores, 125 MHz system clock, 256 KiB of core RAM, and an
+additional 16 MiB of external FLASH memory.
+
+Aside from this USB drive, the badge also presents a USB COM port with a Python
+REPL that can be used to interact with the badge.
+
+The firmware sources and assets for the badge, including this file and others,
+will be available on GitHub. Because the sources might include some of the
+flags, the repository is private until after the event.
 
             🔗 https://github.com/farpoke/badge-2025
 
