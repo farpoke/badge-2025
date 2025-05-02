@@ -18,6 +18,7 @@ def rgb_to_pixel(r, g, b):
     assert 0 <= high_byte <= 255
     assert 0 <= low_byte <= 255
 
+    # The ARM core is little-endian, but we store bytes in the order the LCD driver wants them.
     return high_byte, low_byte
 
 

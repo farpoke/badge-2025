@@ -175,9 +175,9 @@ namespace lcd::internal
         simple_cmd_write(CMD_INTERFACE_PIXEL_FORMAT, 0x55);
         sleep_ms(10);
 
-        // Tell the driver to display 180 degrees rotated (flip x and flip y).
-        // This puts the origin in the top left corner as we view the LCD.
-        simple_cmd_write(CMD_MEMORY_DATA_AC, 0xC0);
+        // Tell the LCD driver to flip the y-axis (MY) and swap x and y (MV).
+        // This puts the origin in the top left with the screen rotated to "landscape mode".
+        simple_cmd_write(CMD_MEMORY_DATA_AC, 0b1010'0000);
         sleep_ms(10);
 
         // Set column and row addresses to match display size.

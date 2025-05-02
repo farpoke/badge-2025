@@ -7,16 +7,16 @@ namespace lcd
 
     constexpr int SPI_FREQ = 10'000'000;
 
-    constexpr int WIDTH = 128;
-    constexpr int HEIGHT = 160;
+    constexpr int WIDTH = 160;
+    constexpr int HEIGHT = 128;
 
     constexpr auto FRAME_SIZE = WIDTH * HEIGHT;
 
     namespace internal
     {
 
-        constexpr int COL_OFFSET = 2;
-        constexpr int ROW_OFFSET = 1;
+        constexpr int COL_OFFSET = 1;
+        constexpr int ROW_OFFSET = 2;
 
         enum Command : uint8_t
         {

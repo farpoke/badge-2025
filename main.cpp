@@ -81,7 +81,7 @@ void draw_frame()
 
     core1::reset_and_launch();
 
-    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, image::splash_fg.color_data);
+    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, image::splash_bg.color_data);
     core1::swap_frame();
 
     printf("> Splash screen wait...\n");
