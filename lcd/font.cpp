@@ -104,7 +104,7 @@ namespace font
             }
         }
 
-        copy(left, right, top, bottom, text_pixels.get());
+        copy(left, top, text_width, text_height, text_pixels.get());
     }
 
 }

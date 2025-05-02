@@ -81,11 +81,12 @@ void draw_frame()
 
     core1::reset_and_launch();
 
-    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, image::splash_bg.color_data);
+    drawing::draw_image(0, 0, image::splash_bg);
+    drawing::fill_masked(0, 0, lcd::from_grayscale(0), image::splash_fg);
     core1::swap_frame();
 
     printf("> Splash screen wait...\n");
-    sleep_ms(1'000);
+    sleep_ms(5'000);
 
     while (false) {
         mpy::repl();

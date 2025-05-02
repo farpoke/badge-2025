@@ -1,6 +1,8 @@
 #pragma once
 
-#include <../lcd/lcd.hpp>
+#include "font.hpp"
+#include "image.hpp"
+#include "lcd.hpp"
 
 namespace drawing
 {
@@ -11,7 +13,11 @@ namespace drawing
     using lcd::to_pixel;
     using lcd::from_grayscale;
 
-    void fill_rect(int left, int right, int top, int bottom, Pixel color);
-    void copy(int left, int right, int top, int bottom, const Pixel* pixels);
+    using image::Image;
+
+    void fill_rect(int left, int top, int width, int height, Pixel color);
+    void copy(int left, int top, int width, int height, const Pixel* pixels);
+    void draw_image(int left, int top, const Image& image);
+    void fill_masked(int left, int top, Pixel color, const Image& mask);
 
 }
