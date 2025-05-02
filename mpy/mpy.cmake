@@ -7,6 +7,9 @@ set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 # Tell micropython where we put our port-specific strings.
 set(MICROPY_QSTRDEFS_PORT "${MICROPY_PORT_DIR}/qstrdefsport.h")
 
+# We're going to pull in some sources from the official rp2 port.
+set(RP2_PORT_DIR "${MICROPY_DIR}/ports/rp2")
+
 # Collect a list of sources for our micropython port:
 list(APPEND MICROPY_SOURCE_PORT
         ${MICROPY_PORT_DIR}/mpconfigport.h
@@ -29,7 +32,6 @@ list(APPEND MICROPY_SOURCE_LIB
         ${MICROPY_DIR}/lib/littlefs/lfs2_util.c
         ${MICROPY_DIR}/lib/oofatfs/ff.c
         ${MICROPY_DIR}/lib/oofatfs/ffunicode.c
-        ${MICROPY_DIR}/ports/rp2/fatfs_port.c
         ${MICROPY_DIR}/shared/readline/readline.c
         ${MICROPY_DIR}/shared/runtime/gchelper_native.c
         ${MICROPY_DIR}/shared/runtime/gchelper_thumb1.s
@@ -40,6 +42,8 @@ list(APPEND MICROPY_SOURCE_LIB
         ${MICROPY_DIR}/shared/runtime/softtimer.c
         ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
         ${MICROPY_DIR}/shared/timeutils/timeutils.c
+        ${RP2_PORT_DIR}/datetime_patch.c
+        ${RP2_PORT_DIR}/fatfs_port.c
 )
 
 # Collect a list of sources for string interning:

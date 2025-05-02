@@ -1,0 +1,38 @@
+
+files:
+  - path: files/README.txt
+  - path: files/hidden.txt
+    hidden: true
+  - path: badge-pdfs.tar.gz
+    archive:
+      - files/badge-drawings.pdf
+      - files/badge-schematic.pdf
+
+fonts:
+  m5x7:
+    ttf: ttf/m5x7.ttf
+    size: 16
+  m6x11:
+    ttf: ttf/m6x11.ttf
+    size: 16
+  noto_sans:
+    ttf: ttf/Noto_Sans/static/NotoSans-Regular.ttf
+    size: 12
+    bpp: 4
+  noto_sans_cm:
+    ttf: ttf/Noto_Sans/static/NotoSans_Condensed-Medium.ttf
+    size: 12
+    bpp: 4
+  lucida:
+    ttf: C:/Windows/Fonts/L_10646.ttf
+    size: 12
+    bpp: 4
+
+images:
+  splash_fg:
+    image: gfx/splash-fg.png
+    color: false
+    alpha: true
+  splash_bg:
+    image: gfx/splash-bg.png
+

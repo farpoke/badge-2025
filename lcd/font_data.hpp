@@ -30,7 +30,7 @@ namespace font::data
         uint8_t glyph_count;
         std::span<const Glyph> glyphs;
 
-        constexpr const Glyph& get(char ch) const {
+        [[nodiscard]] constexpr const Glyph& get(char ch) const {
             if (ch < glyph_base || ch >= glyph_base + glyph_count)
                 return NUL_GLYPH;
             return glyphs[ch - glyph_base];

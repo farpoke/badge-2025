@@ -56,7 +56,8 @@ add_executable(${MICROPY_TARGET}
         board/buttons.cpp
         core/core1.cpp
         core/irq.cpp
-        filesystem/ffport.c
+        usb/ffport.c
+        usb/msc.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
@@ -96,13 +97,20 @@ pico_enable_stdio_usb(${MICROPY_TARGET} 0)  # No stdio over USB; we set up our o
 # Collect pico SDK libraries we want to use.
 # This is mostly important because we need to tell the micropython CMake code about them later (see mpy.cmake).
 set(PICO_SDK_TARGETS
+        hardware_base
         hardware_flash
+        hardware_gpio
         hardware_irq
         hardware_pwm
         hardware_regs
+        hardware_resets
         hardware_rtc
         hardware_spi
+        hardware_structs
         hardware_sync
+        hardware_sync_spin_lock
+        hardware_timer
+        hardware_uart
         pico_aon_timer
         pico_base_headers
         pico_bootsel_via_double_reset
@@ -111,6 +119,7 @@ set(PICO_SDK_TARGETS
         pico_platform_compiler
         pico_platform_panic
         pico_platform_sections
+        pico_stdio
         pico_stdlib
         pico_time
         pico_util
@@ -128,10 +137,8 @@ include(lcd/lcd.cmake)
 
 # Add some subdirectories containing code generation and utilities.
 # Add the corresponding interface libraries (with source files) to our target.
-add_subdirectory(fonts)
-add_subdirectory(gfx)
-add_subdirectory(filesystem)
-target_link_libraries(${MICROPY_TARGET} fonts gfx filesystem)
+add_subdirectory(assets)
+target_link_libraries(${MICROPY_TARGET} assets)
 
 # Ask the pico SDK to generate extra outputs for our target.
 pico_add_extra_outputs(${MICROPY_TARGET})

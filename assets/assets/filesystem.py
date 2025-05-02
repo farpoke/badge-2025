@@ -4,10 +4,15 @@ import string
 import struct
 import datetime
 import enum
-import sys
 from dataclasses import dataclass
 from pathlib import Path
-from textwrap import dedent, wrap
+from textwrap import wrap
+import tarfile
+import gzip
+import io
+
+from .base import AssetBase
+
 
 # References:
 #
@@ -236,11 +241,11 @@ class Filesystem:
         self.boot_sector = BootSector()
 
         self.table = [
-            # First two entries are special.
-            0xF00 | self.boot_sector.media_type,
-            END_OF_CHAIN,
-            # Remaining clusters are unused for now.
-        ] + [0] * (BLOCK_COUNT - 2)
+                         # First two entries are special.
+                         0xF00 | self.boot_sector.media_type,
+                         END_OF_CHAIN,
+                         # Remaining clusters are unused for now.
+                     ] + [0] * (BLOCK_COUNT - 2)
 
         self.root_entries = [
             DirectoryEntry(long_name=self.boot_sector.volume_name, flags=DirEntryFlags.VOLUME_ID),
@@ -274,26 +279,21 @@ class Filesystem:
                 hi & 0xFF,
                 ((hi >> 8) & 0xF) | ((lo & 0xF) << 4),
                 (lo >> 4) & 0xFF,
-            ])
+                ])
         data = bytes(table_bytes)
         assert len(data) == FAT_SIZE, f'Expected FAT data to be {FAT_SIZE} bytes, but is {len(data)}'
         return data
 
-    def add_file(self, name: str):
-        path = Path(name).resolve()
-        assert path.is_file(), f'Path "{path}" is not a file'
-        content = path.read_bytes()
-
+    def add_file(self, name: str, content: bytes, *, hidden: bool = False):
         flags = DirEntryFlags.ARCHIVE
-
-        if path.name == 'hidden.txt':
+        if hidden:
             flags = DirEntryFlags.HIDDEN | DirEntryFlags.SYSTEM
 
         n_clusters = (len(content) + 511) // 512
         clusters = self._claim_clusters(n_clusters)
 
         entry = DirectoryEntry(
-            long_name=path.name,
+            long_name=name,
             flags=flags,
             cluster=clusters[0],
             size=len(content)
@@ -308,8 +308,6 @@ class Filesystem:
                 self.data[cluster - 2] = content[i * 512:(i + 1) * 512]
             else:
                 self.data[cluster - 2] = content[i * 512:]
-
-        print(f'- File {path} ({len(content)} bytes) stored in {len(clusters)} cluster(s)')
 
     def to_bytes(self):
         image_bytes = self.boot_sector.to_bytes()
@@ -334,50 +332,60 @@ class Filesystem:
         return image_bytes
 
 
-def format_cpp_file(data: bytes) -> str:
-    lines = [
-        '#include <filesystem/disk.hpp>',
-        '#include <usb/tusb_config.h>',
-        '',
-        f'constexpr uint32_t DISK_IMAGE_SIZE = {len(data)};',
-        'constexpr uint32_t DISK_IMAGE_BLOCK_COUNT = DISK_IMAGE_SIZE / USB_MSC_BLOCK_SIZE;',
-        'static_assert(DISK_IMAGE_BLOCK_COUNT * USB_MSC_BLOCK_SIZE == DISK_IMAGE_SIZE);',
-        '',
-        'const uint8_t DISK_IMAGE[DISK_IMAGE_SIZE] = {',
-    ] \
-    + wrap(', '.join(f'0x{byte:02x}' for byte in data),
-           width=100,
-           initial_indent='    ',
-           subsequent_indent='    ') \
-    + [
-        '};',
-        '',
-    ]
-    return '\n'.join(lines)
+class FilesystemAsset(AssetBase):
+    def __init__(self):
+        super().__init__()
+        self.fs = Filesystem()
 
+    def add_file(self, path: str, **kwargs):
+        path = Path(path).resolve()
+        name = path.name
+        content = path.read_bytes()
+        self.fs.add_file(name, content, **kwargs)
+        self.dependencies.append(path)
+        print(f'- File {name} added to disk image')
 
-def run():
-    fs = Filesystem()
+    def add_archive(self, name: str, files: list[str]):
+        archive_buffer = io.BytesIO()
+        archive = tarfile.open(name, 'w:gz', archive_buffer)
 
-    assert len(sys.argv) > 2
-    outdir = Path(sys.argv[1])
-    for arg in sys.argv[2:]:
-        fs.add_file(arg)
+        def reset(info: tarfile.TarInfo) -> tarfile.TarInfo:
+            info.uid = info.gid = 0
+            info.uname = info.gname = 'root'
+            return info
 
-    image_bytes = fs.to_bytes()
+        for file in files:
+            path = Path(file).resolve()
+            archive.add(path, arcname=path.name, filter=reset)
+            self.dependencies.append(path)
+            print(f'- File {path.name} added to archive {name}')
 
-    outdir.mkdir(parents=True, exist_ok=True)
+        archive.close()
+        del archive
 
-    img_path = outdir / 'disk.img'
-    cpp_path = outdir / 'disk.cpp'
+        self.fs.add_file(name, archive_buffer.getbuffer().tobytes())
+        print(f'- Archive {name} added to disk image')
 
-    img_path.write_bytes(image_bytes)
-    print('Disk image written to', img_path)
+    def add(self, *, path: str, hidden: bool = False, archive: list[str] | None = None):
+        if archive:
+            self.add_archive(path, archive)
+        else:
+            self.add_file(path, hidden=hidden)
 
-    cpp_text = format_cpp_file(image_bytes)
-    cpp_path.write_text(cpp_text)
-    print('Disk .cpp data written to', cpp_path)
+    def get_output(self):
+        data = self.fs.to_bytes()
+        print(f'- FAT filesystem image, {len(data) / 1024:.1f} KiB')
 
+        header_lines = [
+            f'constexpr uint32_t DISK_IMAGE_SIZE = {len(data)};',
+            f'constexpr uint32_t DISK_IMAGE_BLOCK_COUNT = {BLOCK_COUNT};',
+            'extern const uint8_t DISK_IMAGE[];',
+        ]
+        source_lines = [
+            '#include <usb/tusb_config.h>',
+            '',
+            'static_assert(DISK_IMAGE_BLOCK_COUNT * USB_MSC_BLOCK_SIZE == DISK_IMAGE_SIZE);',
+            '',
+        ] + AssetBase.format_data_array(name='DISK_IMAGE', data=data)
 
-if __name__ == '__main__':
-    run()
+        return header_lines, source_lines

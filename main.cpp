@@ -8,13 +8,14 @@
 
 #include <board/buttons.hpp>
 #include <core/core1.hpp>
-#include <gfx/image.hpp>
 #include <lcd/drawing.hpp>
 #include <lcd/font.hpp>
 #include <lcd/lcd.hpp>
 #include <mpy/mpy.hpp>
 #include <mpy/mphalport.h>
 #include <usb/usb.hpp>
+
+#include <assets.hpp>
 
 static constexpr auto TABLE_SIZE_POWER = 10;
 static constexpr auto TABLE_SIZE = 1 << TABLE_SIZE_POWER;
@@ -80,25 +81,19 @@ void draw_frame()
 
     core1::reset_and_launch();
 
-    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, reinterpret_cast<const lcd::Pixel*>(IMAGE_DATA));
+    drawing::copy(0, lcd::WIDTH - 1, 0, lcd::HEIGHT - 1, image::splash_fg.color_data);
     core1::swap_frame();
 
     printf("> Splash screen wait...\n");
-    const auto start = get_absolute_time();
-    while (absolute_time_diff_us(start, get_absolute_time()) < 1'000'000) {
-        tud_task();
-        tight_loop_contents();
-    }
+    sleep_ms(1'000);
 
-    while (true) {
+    while (false) {
         mpy::repl();
     }
 
     printf("> Main loop...\n");
     bool active = true;
     while(true) {
-
-        tud_task();
         
         buttons::update();
         if (buttons::rh_push()) {

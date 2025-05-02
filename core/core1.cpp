@@ -7,6 +7,8 @@
 
 #include <hardware/sync.h>
 
+#include <tusb.h>
+
 #include <lcd/lcd.hpp>
 
 namespace
@@ -87,7 +89,12 @@ namespace
         while (true) {
 
             // Wait until core0 says it wants to do a swap.
-            _sync.lock_when([]{ return _sync.protected_want_swap;});
+            // Run any pending USB tasks while we're waiting.
+            _sync.lock_when([] {
+                while (tud_task_event_ready())
+                    tud_task();
+                return _sync.protected_want_swap;
+            });
 
             // Start the swap by exchanging buffers. This is the fast part that we do while holding the lock.
             lcd::internal::begin_swap();

@@ -8,7 +8,6 @@ extern "C" {
 
 #include <py/gc.h>
 #include <py/runtime.h>
-#include <py/stackctrl.h>
 
 #include <shared/runtime/pyexec.h>
 

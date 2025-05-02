@@ -4,6 +4,8 @@ import re
 from textwrap import dedent, fill
 import argparse
 
+from .base import AssetBase
+
 
 CHARSET = ''.join(chr(i) for i in range(32, 127))
 
@@ -45,7 +47,7 @@ class Glyph:
             self.data.append(value)
 
 
-def export_ttf(ttf_path: Path, size: int, name: str, bpp: int, out_dir: Path):
+def export_ttf(ttf_path: Path, size: int, name: str, bpp: int):
     assert re.fullmatch(r'[a-z][a-z0-9_]+', name, re.IGNORECASE)
 
     font = ImageFont.FreeTypeFont(ttf_path, size)
@@ -75,39 +77,30 @@ def export_ttf(ttf_path: Path, size: int, name: str, bpp: int, out_dir: Path):
             f'  // "{glyph_.ch}"'
         )
 
-    hpp_path = out_dir / (name + '.hpp')
-    cpp_path = out_dir / (name + '.cpp')
-
     hpp_content = dedent(f'''\
-        #pragma once
-        
-        #include <fonts/font_data.hpp>
-        
         namespace font::data
         {{
             /**
-             * Name:  {family}
-             * Style: {style}
-             * File:  {ttf_path.name}
-             * Size:  {size}
+             * - Name:  {family}
+             * - Style: {style}
+             * - File:  {ttf_path.name}
+             * - Size:  {size}
              */
             extern const Font {name};
         }}
     ''')
 
     cpp_content = dedent(f'''\
-        #include "{hpp_path.name}"
-        
         namespace font::data
         {{
         
             namespace
             {{
                 constexpr GlyphDataType {name}_data[] = {{ {
-                    '\n' + fill(', '.join(map(lambda v: f'0x{v:x}', combined_data)), 
-                                initial_indent=' '*20,
-                                subsequent_indent=' '*20)
-                } }};
+    '\n' + fill(', '.join(map(lambda v: f'0x{v:x}', combined_data)),
+                initial_indent=' '*20,
+                subsequent_indent=' '*20)
+    } }};
             
                 constexpr Glyph {name}_glyphs[] = {{
                     {('\n' + ' ' * 20).join(map(glyph_def, glyphs))}
@@ -126,22 +119,22 @@ def export_ttf(ttf_path: Path, size: int, name: str, bpp: int, out_dir: Path):
         }}
     ''')
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    hpp_path.write_text(hpp_content)
-    cpp_path.write_text(cpp_content)
+    return hpp_content, cpp_content
 
 
-def run():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('name', type=str, help='Name of the font instance to generate. Must be a valid C/C++ identifier.')
-    parser.add_argument('size', type=int, help='Size of the font instance to generate, in "font size" units.')
-    parser.add_argument('bpp',  type=int, help='Bits per pixel to use when storing the font data.')
-    parser.add_argument('path', type=Path, help='Path to TTF file.')
-    parser.add_argument('out',  type=Path, help='Path to output directory.')
+class FontAsset(AssetBase):
+    def __init__(self, name: str, *, ttf: str, size: int, bpp: int = 1):
+        super().__init__()
 
-    args = parser.parse_args()
-    export_ttf(args.path, args.size, args.name, args.bpp, args.out)
+        self.name = name
+        self.ttf = Path(ttf).resolve()
+        self.size = size
+        self.bpp = bpp
 
+        self.dependencies.append(self.ttf)
 
-if __name__ == '__main__':
-    run()
+    def get_output(self):
+        print(f'- Font asset {self.name}, size={self.size}, bpp={self.bpp} ttf={self.ttf.as_posix()}')
+        hpp, cpp = export_ttf(self.ttf, self.size, self.name, self.bpp)
+        return hpp.splitlines(), cpp.splitlines()
+

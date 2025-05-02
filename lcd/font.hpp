@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "../fonts/font_data.hpp"
+#include "font_data.hpp"
 
 namespace font
 {

@@ -3,14 +3,8 @@
 #include <cstring>
 #include <memory>
 
-#include <fonts/font_data.hpp>
-#include <font-data/lucida.hpp>
-#include <font-data/m5x7.hpp>
-#include <font-data/m6x11.hpp>
-#include <font-data/noto_sans.hpp>
-#include <font-data/noto_sans_cm.hpp>
-
-#include <../lcd/drawing.hpp>
+#include <assets.hpp>
+#include <lcd/drawing.hpp>
 
 namespace font
 {
