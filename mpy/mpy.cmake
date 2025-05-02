@@ -11,6 +11,7 @@ set(MICROPY_QSTRDEFS_PORT "${MICROPY_PORT_DIR}/qstrdefsport.h")
 list(APPEND MICROPY_SOURCE_PORT
         ${MICROPY_PORT_DIR}/mpconfigport.h
         ${MICROPY_PORT_DIR}/mphalport.h
+        ${MICROPY_PORT_DIR}/mphalport_softtimer.c
         ${MICROPY_PORT_DIR}/mphalport_stdio.c
         ${MICROPY_PORT_DIR}/mphalport_time.c
         ${MICROPY_PORT_DIR}/mpy.c

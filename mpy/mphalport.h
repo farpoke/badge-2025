@@ -2,10 +2,11 @@
 
 // C.f. micropython/ports/rp2/mphalport.h
 
+#include "mpconfigport.h"
+
 #ifndef NO_QSTR
 #include <hardware/timer.h>
 #include <pico/time.h>
-
 #include "pendsv.h"
 #endif
 
@@ -17,6 +18,7 @@ extern "C" {
 #endif
 
 void mp_hal_time_ns_set_from_rtc(void);
+void soft_timer_init(void);
 
 #if __cplusplus
 }

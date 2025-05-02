@@ -5,7 +5,7 @@ static const mp_rom_map_elem_t lcd_module_globals_table[] = {
 };
 static MP_DEFINE_CONST_DICT(lcd_module_globals, lcd_module_globals_table);
 
-const mp_obj_module_t lcd_module = {
+const mp_obj_module_t lcd_module = { // NOLINT
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&lcd_module_globals,
 };

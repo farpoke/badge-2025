@@ -6,14 +6,15 @@
 
 #include <tusb.h>
 
-#include "board/buttons.hpp"
-#include "core/core1.hpp"
-#include "gfx/image.hpp"
-#include "lcd/drawing.hpp"
-#include "lcd/font.hpp"
-#include "lcd/lcd.hpp"
-#include "mpy/mpy.hpp"
-#include "usb/usb.hpp"
+#include <board/buttons.hpp>
+#include <core/core1.hpp>
+#include <gfx/image.hpp>
+#include <lcd/drawing.hpp>
+#include <lcd/font.hpp>
+#include <lcd/lcd.hpp>
+#include <mpy/mpy.hpp>
+#include <mpy/mphalport.h>
+#include <usb/usb.hpp>
 
 static constexpr auto TABLE_SIZE_POWER = 10;
 static constexpr auto TABLE_SIZE = 1 << TABLE_SIZE_POWER;
@@ -74,6 +75,8 @@ void draw_frame()
     init_sin_table();
 
     stdio_flush();
+
+    soft_timer_init();
 
     core1::reset_and_launch();
 
