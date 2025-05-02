@@ -89,12 +89,7 @@ namespace
         while (true) {
 
             // Wait until core0 says it wants to do a swap.
-            // Run any pending USB tasks while we're waiting.
-            _sync.lock_when([] {
-                while (tud_task_event_ready())
-                    tud_task();
-                return _sync.protected_want_swap;
-            });
+            _sync.lock_when([] { return _sync.protected_want_swap; });
 
             // Start the swap by exchanging buffers. This is the fast part that we do while holding the lock.
             lcd::internal::begin_swap();
@@ -134,7 +129,11 @@ namespace core1
         _sync.do_protected([]{ _sync.protected_want_swap = true; });
 
         // Now wait until core1 clears the flag to indicate it's done with the swap and we can continue.
-        _sync.wait_until([]{ return _sync.protected_want_swap == false; });
+        _sync.wait_until([] {
+            while (tud_task_event_ready())
+                tud_task();
+            return _sync.protected_want_swap == false;
+        });
     }
 
 }
