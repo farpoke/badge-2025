@@ -83,6 +83,15 @@ void draw_frame()
 
     drawing::draw_image(0, 0, image::splash_bg);
     drawing::fill_masked(0, 0, lcd::from_grayscale(0), image::splash_fg);
+    drawing::fill_rect(20, 20, 80, 80, lcd::to_pixel(20, 30, 40));
+    drawing::draw_rect(25, 25, 70, 70, lcd::to_pixel(255, 128, 0));
+    const auto line_color = lcd::to_pixel(0, 255, 255);
+    for (int i = 25; i < 95; i += 10) {
+        drawing::draw_line_aa(60, 60, 25, i, line_color);
+        drawing::draw_line_aa(60, 60, 94, i, line_color);
+        drawing::draw_line_aa(60, 60, i, 25, line_color);
+        drawing::draw_line_aa(60, 60, i, 94, line_color);
+    }
     core1::swap_frame();
 
     printf("> Splash screen wait...\n");

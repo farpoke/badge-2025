@@ -1,7 +1,81 @@
 #include "drawing.hpp"
 
+#include <math.h>
+
 namespace drawing
 {
+
+    void clear(Pixel color) {
+        auto* ptr = lcd::get_offscreen_ptr_unsafe();
+        for (int i = 0; i < WIDTH * HEIGHT; i++)
+            ptr[i] = color;
+    }
+
+    void draw_pixel(int x, int y, Pixel color) {
+        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
+            return;
+        auto* ptr = lcd::get_offscreen_ptr_unsafe();
+        ptr[y * WIDTH + x] = color;
+    }
+
+    void draw_line(int x0, int y0, int x1, int y1, Pixel color) {
+        // See http://members.chello.at/~easyfilter/bresenham.html
+        const int dx = abs(x1 - x0);
+        const int sx = x0 < x1 ? 1 : -1;
+        const int dy = -abs(y1 - y0);
+        const int sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy;
+        int x = x0;
+        int y = y0;
+        while (true) {
+            draw_pixel(x, y, color);
+            if (x == x1 && y == y1) break;
+            const auto e2 = 2 * err;
+            if (e2 >= dy) {
+                err += dy;
+                x += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y += sy;
+            }
+        }
+    }
+
+    void draw_line_aa(int x0, int y0, int x1, int y1, Pixel color) {
+        // See http://members.chello.at/~easyfilter/bresenham.html
+        const int dx = abs(x1 - x0);
+        const int sx = x0 < x1 ? 1 : -1;
+        const int dy = -abs(y1 - y0);
+        const int sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy;
+        int x = x0;
+        int y = y0;
+        while (true) {
+            draw_pixel(x, y, color);
+            if (x == x1 && y == y1) break;
+            const auto e2 = 2 * err;
+            if (e2 >= dy) {
+                err += dy;
+                x += sx;
+            }
+            if (e2 <= dx) {
+                err += dx;
+                y += sy;
+            }
+        }
+    }
+
+    void draw_rect(int left, int top, int width, int height, Pixel color) {
+        const auto x0 = left;
+        const auto x1 = left + width - 1;
+        const auto y0 = top;
+        const auto y1 = top + height - 1;
+        draw_line(x0, y0, x1, y0, color);
+        draw_line(x0, y1, x1, y1, color);
+        draw_line(x0, y0, x0, y1, color);
+        draw_line(x1, y0, x1, y1, color);
+    }
 
     template<typename T = uint8_t>
     bool validate_rect(int &left, int &top, int &width, int &height, T **data = nullptr, int stride = 0) {

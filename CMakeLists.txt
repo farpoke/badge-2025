@@ -133,6 +133,17 @@ include(mpy/mpy.cmake)
 # Include our badge code and module.
 include(badge/badge.cmake)
 
+# Add in the LVGL submodule...
+# Tell it explicitly where to find the config header.
+set(LV_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/badge/lvgl_conf.h)
+target_compile_definitions(${MICROPY_TARGET} PRIVATE LV_CONF_PATH="${LV_CONF_PATH}")
+# Don't build examples or demos.
+set(LV_CONF_BUILD_DISABLE_EXAMPLES ON)
+set(LV_CONF_BUILD_DISABLE_DEMOS ON)
+# Add the LVGL project to our target.
+add_subdirectory(external/lvgl)
+target_link_libraries(${MICROPY_TARGET} lvgl_interface)
+
 # Include our assets and add them to our target.
 add_subdirectory(assets)
 target_link_libraries(${MICROPY_TARGET} assets)
