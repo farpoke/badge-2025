@@ -51,8 +51,8 @@ class AssetCollection:
             '',
             '#include <cstdint>',
             '',
-            '#include <lcd/font_data.hpp>',
-            '#include <lcd/image.hpp>',
+            '#include <badge/font_data.hpp>',
+            '#include <badge/image.hpp>',
             '',
         ]
         source_lines = [

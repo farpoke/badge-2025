@@ -4,7 +4,7 @@
 #include <memory>
 
 #include <assets.hpp>
-#include <lcd/drawing.hpp>
+#include <badge/drawing.hpp>
 
 namespace font
 {

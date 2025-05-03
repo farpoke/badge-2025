@@ -27,8 +27,8 @@ if (EXISTS ${picoVscode})
 endif()
 # ====================================================================================
 
-# Look for the pico board headers in the board directory, specifically our `badge-2025.h` header.
-set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/board)
+# Look for the pico board headers in the badge directory, specifically our `badge-2025.h` header.
+set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/badge)
 set(PICO_BOARD badge-2025 CACHE STRING "Board type")
 
 # Name of our project and target, stored where micropython can find it.
@@ -53,10 +53,8 @@ include(${MICROPY_DIR}/py/usermod.cmake)
 # Create target executable with our sources.
 add_executable(${MICROPY_TARGET}
         main.cpp
-        board/buttons.cpp
         core/core1.cpp
         core/irq.cpp
-        usb/ffport.c
         usb/msc.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
@@ -132,11 +130,10 @@ target_link_libraries(${MICROPY_TARGET} ${PICO_SDK_TARGETS})
 # Include our main CMake fragment to setup our micropython port and sources.
 include(mpy/mpy.cmake)
 
-# Include cmake fragment for sources related to the lcd and micropython lcd module.
-include(lcd/lcd.cmake)
+# Include our badge code and module.
+include(badge/badge.cmake)
 
-# Add some subdirectories containing code generation and utilities.
-# Add the corresponding interface libraries (with source files) to our target.
+# Include our assets and add them to our target.
 add_subdirectory(assets)
 target_link_libraries(${MICROPY_TARGET} assets)
 

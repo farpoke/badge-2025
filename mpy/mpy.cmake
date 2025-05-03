@@ -12,6 +12,7 @@ set(RP2_PORT_DIR "${MICROPY_DIR}/ports/rp2")
 
 # Collect a list of sources for our micropython port:
 list(APPEND MICROPY_SOURCE_PORT
+        ${MICROPY_PORT_DIR}/ffport.c
         ${MICROPY_PORT_DIR}/mpconfigport.h
         ${MICROPY_PORT_DIR}/mphalport.h
         ${MICROPY_PORT_DIR}/mphalport_softtimer.c

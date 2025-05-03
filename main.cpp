@@ -6,13 +6,13 @@
 
 #include <tusb.h>
 
-#include <board/buttons.hpp>
+#include <badge/buttons.hpp>
+#include <badge/drawing.hpp>
+#include <badge/font.hpp>
+#include <badge/lcd.hpp>
 #include <core/core1.hpp>
-#include <lcd/drawing.hpp>
-#include <lcd/font.hpp>
-#include <lcd/lcd.hpp>
-#include <mpy/mpy.hpp>
 #include <mpy/mphalport.h>
+#include <mpy/mpy.hpp>
 #include <usb/usb.hpp>
 
 #include <assets.hpp>

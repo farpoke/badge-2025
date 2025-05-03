@@ -9,7 +9,7 @@
 
 #include <tusb.h>
 
-#include <lcd/lcd.hpp>
+#include <badge/lcd.hpp>
 
 namespace
 {
