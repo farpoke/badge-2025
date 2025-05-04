@@ -16,8 +16,6 @@
 
 namespace lcd::internal
 {
-    Pixel *_onScreenFrame = nullptr;
-    Pixel *_offScreenFrame = nullptr;
 
     void wait_for_spi() {
         while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
@@ -69,10 +67,10 @@ namespace lcd::internal
         }
     }
 
-    void write(const void* data, size_t n_bytes) {
+    void write(const void* data, int n_bytes) {
         dir_out();
         const auto   ptr = static_cast<const uint8_t *>(data);
-        const size_t n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
+        const int n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::write(..., %d) wrote %d bytes\n", n_bytes, n);
         }
@@ -83,11 +81,11 @@ namespace lcd::internal
         // Lower baud rate?
     }
 
-    void read(void* buffer, size_t n_bytes, bool dummy_first) {
+    void read(void* buffer, int n_bytes, bool dummy_first) {
         dir_in();
         if (dummy_first) clock_cycle();
         const auto ptr = static_cast<uint8_t*>(buffer);
-        const size_t n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
+        const int n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::read(..., %d, %d) read %d bytes\n", n_bytes, dummy_first, n);
         }
@@ -184,18 +182,6 @@ namespace lcd::internal
         simple_cmd_write(CMD_COL_ADDRESS, Address(COL_OFFSET, WIDTH + COL_OFFSET - 1));
         simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
 
-        if (_onScreenFrame == nullptr)
-            _onScreenFrame = new Pixel[WIDTH * HEIGHT];
-
-        if (_offScreenFrame == nullptr)
-            _offScreenFrame = new Pixel[WIDTH * HEIGHT];
-
-        for (int i = 0; i < WIDTH * HEIGHT; i++) {
-            _onScreenFrame[i] = to_pixel(255, 0, 0);
-            _offScreenFrame[i] = to_pixel(0, 255, 0);
-        }
-        end_swap(); // This should make the entire screen red until something else is written to it.
-
         printf("OK\n");
     }
 
@@ -291,18 +277,17 @@ namespace lcd::internal
         simple_cmd_write(CMD_BRIGHTNESS_WRITE, brightness);
     }
 
-    void begin_swap() {
-        const auto tmp = _onScreenFrame;
-        _onScreenFrame = _offScreenFrame;
-        _offScreenFrame = tmp;
+    static const Pixel* _frame = nullptr;
+
+    void begin_swap(const Pixel* frame) {
+        _frame = frame;
     }
 
     void end_swap() {
-        // printf("? end_swap\n");
         select_command();
         write(CMD_MEMORY_WRITE);
         select_data();
-        write(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
+        write(_frame, FRAME_SIZE);
         deselect();
     }
 
@@ -338,10 +323,6 @@ namespace lcd {
         pwm_set_enabled(pwm_slice, false);
         gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
         gpio_put(LCD_LED_PIN, true);
-    }
-
-    Pixel* get_offscreen_ptr_unsafe() {
-        return _offScreenFrame;
     }
 
 }

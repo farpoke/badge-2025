@@ -92,7 +92,7 @@ namespace
             _sync.lock_when([] { return _sync.protected_want_swap; });
 
             // Start the swap by exchanging buffers. This is the fast part that we do while holding the lock.
-            lcd::internal::begin_swap();
+            lcd::internal::begin_swap(nullptr);
 
             // It's now safe to clear the swap flag and release the lock.
             _sync.protected_want_swap = false;

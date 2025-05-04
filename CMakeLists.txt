@@ -143,6 +143,7 @@ set(LV_CONF_BUILD_DISABLE_DEMOS ON)
 # Add the LVGL project to our target.
 add_subdirectory(external/lvgl)
 target_link_libraries(${MICROPY_TARGET} lvgl_interface)
+target_include_directories(${MICROPY_TARGET} PRIVATE external)
 
 # Include our assets and add them to our target.
 add_subdirectory(assets)

@@ -6,63 +6,17 @@
 
 #include <tusb.h>
 
+#include <lvgl/lvgl.h>
+
 #include <badge/buttons.hpp>
-#include <badge/drawing.hpp>
-#include <badge/font.hpp>
 #include <badge/lcd.hpp>
-#include <core/core1.hpp>
 #include <mpy/mphalport.h>
 #include <mpy/mpy.hpp>
 #include <usb/usb.hpp>
 
 #include <assets.hpp>
 
-static constexpr auto TABLE_SIZE_POWER = 10;
-static constexpr auto TABLE_SIZE = 1 << TABLE_SIZE_POWER;
-static constexpr auto TABLE_SIZE_MASK = TABLE_SIZE - 1;
-
-uint8_t sin_table_data[TABLE_SIZE];
-
-void init_sin_table()
-{
-    for (int i = 0; i < TABLE_SIZE; i++)
-    {
-        auto x = (float)i / TABLE_SIZE * 3.14159265f * 2;
-        auto y = (sin(x) + 1) / 2;
-        y *= y;
-        int z = (int)(y * 255);
-        if (z < 0)
-            z = 0;
-        if (z > 255)
-            z = 255;
-        sin_table_data[i] = (uint8_t)z;
-    }
-}
-
-uint8_t sin_table(int i)
-{
-    return sin_table_data[i & TABLE_SIZE_MASK];
-}
-
-lcd::Pixel color(int x, int y, int t)
-{
-    auto r = sin_table(x * 2 + y * 4 + t * 2);
-    auto g = sin_table(x * 4 + y * 2 - t * 4);
-    auto b = sin_table(x * 2 - y * 4 + t * 6);
-    return lcd::to_pixel(r, g, b);
-}
-
-void draw_frame()
-{
-    static int frame = 0;
-    frame++;
-
-    auto* ptr = lcd::get_offscreen_ptr_unsafe();
-
-    for (size_t row = 0; row < lcd::HEIGHT; row++)
-        for (size_t col = 0; col < lcd::WIDTH; col++)
-            *ptr++ = color(row, col, frame);
-}
+void setup_lvgl();
 
 [[noreturn]] int main()
 {
@@ -73,33 +27,44 @@ void draw_frame()
     buttons::init();
     mpy::init();
 
-    init_sin_table();
-
     stdio_flush();
 
     soft_timer_init();
 
-    core1::reset_and_launch();
+    setup_lvgl();
 
-    drawing::draw_image(0, 0, image::splash_bg);
-    drawing::fill_masked(0, 0, lcd::from_grayscale(0), image::splash_fg);
-    drawing::fill_rect(20, 20, 80, 80, lcd::to_pixel(20, 30, 40));
-    drawing::draw_rect(25, 25, 70, 70, lcd::to_pixel(255, 128, 0));
-    const auto line_color = lcd::to_pixel(0, 255, 255);
-    for (int i = 25; i < 95; i += 10) {
-        drawing::draw_line_aa(60, 60, 25, i, line_color);
-        drawing::draw_line_aa(60, 60, 94, i, line_color);
-        drawing::draw_line_aa(60, 60, i, 25, line_color);
-        drawing::draw_line_aa(60, 60, i, 94, line_color);
-    }
-    core1::swap_frame();
+    // core1::reset_and_launch();
 
-    printf("> Splash screen wait...\n");
-    sleep_ms(5'000);
+    // drawing::draw_image(0, 0, image::splash_bg);
+    // drawing::fill_masked(0, 0, lcd::from_grayscale(0), image::splash_fg);
+    // drawing::fill_rect(20, 20, 80, 80, lcd::to_pixel(20, 30, 40));
+    // drawing::draw_rect(25, 25, 70, 70, lcd::to_pixel(255, 128, 0));
+    // const auto line_color = lcd::to_pixel(0, 255, 255);
+    // for (int i = 25; i < 95; i += 10) {
+    //     drawing::draw_line_aa(60, 60, 25, i, line_color);
+    //     drawing::draw_line_aa(60, 60, 94, i, line_color);
+    //     drawing::draw_line_aa(60, 60, i, 25, line_color);
+    //     drawing::draw_line_aa(60, 60, i, 94, line_color);
+    // }
+    // core1::swap_frame();
 
     while (false) {
         mpy::repl();
     }
+
+    auto *screen = lv_screen_active();
+    lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
+
+    auto *container = lv_obj_create(screen);
+    lv_obj_set_size(container, lcd::WIDTH, lcd::HEIGHT);
+    lv_obj_set_pos(container, 0, 0);
+    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_border_width(container, 1, LV_PART_MAIN);
+    lv_obj_set_style_border_color(container, lv_color_white(), LV_PART_MAIN);
+
+    auto *label = lv_label_create(container);
+    lv_label_set_text(label, "Hello World!");
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 
     printf("> Main loop...\n");
     bool active = true;
@@ -126,21 +91,9 @@ void draw_frame()
             usb::write("Hi!\n");
         }
 
-        draw_frame();
+        while (tud_task_event_ready())
+            tud_task();
 
-        auto x = 3;
-        auto y = 17;
-
-        font::lucida.draw(x, y, "\"lucida\" Hello world!");
-        y += 22;
-        font::m5x7.draw(x, y, "\"m5x7\" Hello world!");
-        y += 18;
-        font::m6x11.draw(x, y, "\"m6x11\" Hello world!");
-        y += 21;
-        font::noto_sans.draw(x, y, "\"Noto Sans\" Hello world!");
-        y += 22;
-        font::noto_sans_cm.draw(x, y, "\"Noto Sans Condensed Medium\" Hello world!");
-
-        core1::swap_frame();
+        lv_timer_handler();
     }
 }
