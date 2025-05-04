@@ -48,12 +48,12 @@ void setup_lvgl();
     // }
     // core1::swap_frame();
 
-    while (false) {
-        mpy::repl();
-    }
-
     auto *screen = lv_screen_active();
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
+
+    while (true) {
+        mpy::repl();
+    }
 
     auto *container = lv_obj_create(screen);
     lv_obj_set_size(container, lcd::WIDTH, lcd::HEIGHT);

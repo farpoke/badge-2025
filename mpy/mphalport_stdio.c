@@ -4,9 +4,12 @@
 #ifndef NO_QSTR
 #include <pico.h>
 #include <tusb.h>
+#include <lvgl/lvgl.h>
 #endif
 
 #include <py/stream.h>
+
+#include "py/runtime.h"
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
@@ -20,7 +23,10 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 int mp_hal_stdin_rx_chr() {
     int ch = -1;
     while (ch == -1) {
-        tud_task();
+        while (tud_task_event_ready())
+            tud_task();
+        lv_timer_handler();
+        mp_handle_pending(true);
         ch = tud_cdc_read_char();
     }
     return ch;
