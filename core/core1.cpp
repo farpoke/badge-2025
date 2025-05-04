@@ -92,7 +92,7 @@ namespace
             _sync.lock_when([] { return _sync.protected_want_swap; });
 
             // Start the swap by exchanging buffers. This is the fast part that we do while holding the lock.
-            lcd::internal::begin_swap(nullptr);
+            lcd::internal::begin_swap();
 
             // It's now safe to clear the swap flag and release the lock.
             _sync.protected_want_swap = false;
@@ -116,6 +116,9 @@ namespace core1
 
         // Initialize/reset our sync data structure.
         _sync.init();
+
+        // Flush the stdio buffer in case something happens during launch, so that core1 has space to write stuff.
+        stdio_flush();
 
         // Launch core1 code.
         multicore_launch_core1_with_stack(core1_main, _core1_stack, sizeof(_core1_stack));

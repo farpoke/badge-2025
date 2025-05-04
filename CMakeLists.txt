@@ -31,46 +31,46 @@ endif()
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/badge)
 set(PICO_BOARD badge-2025 CACHE STRING "Board type")
 
-# Name of our project and target, stored where micropython can find it.
-set(MICROPY_TARGET badge-2025)
+# Name of our project and target.
+set(TARGET badge-2025)
 
-# Need a path to the micropython repository.
-set(MICROPY_DIR "$ENV{MICROPY_DIR}" CACHE PATH "Path to micropython repository")
-
-# Pull in micropython and pico SDK (must be before project).
-include(${MICROPY_DIR}/py/py.cmake)
-include(${MICROPY_DIR}/extmod/extmod.cmake)
+# Pull in the pico SDK (must be before project).
 include(pico_sdk_import.cmake)
 
 # Define CMake project.
-project(${MICROPY_TARGET} C CXX ASM)
+project(${TARGET} C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK.
 pico_sdk_init()
 
-include(${MICROPY_DIR}/py/usermod.cmake)
-
 # Create target executable with our sources.
-add_executable(${MICROPY_TARGET}
+add_executable(${TARGET}
         main.cpp
+        badge/buttons.cpp
+        badge/drawing.cpp
+        badge/font.cpp
+        badge/lcd.cpp
         core/core1.cpp
         core/irq.cpp
+        ui/splash.cpp
+        ui/state.cpp
+        ui/ui.cpp
         usb/msc.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
-target_include_directories(${MICROPY_TARGET} PRIVATE
+target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_compile_definitions(${MICROPY_TARGET} PUBLIC
+target_compile_definitions(${TARGET} PUBLIC
         # Use all 8 KiB of "scratch" memory for the core0 stack.
         # We will allocate some memory for the core1 stack elsewhere.
         PICO_STACK_SIZE=0x2000
         PICO_CORE1_STACK_SIZE=0
 )
 
-target_compile_options(${MICROPY_TARGET} PRIVATE
+target_compile_options(${TARGET} PRIVATE
         # Ask the compiler to check and warn us about stack usage.
         -fstack-usage
         -Wstack-usage=5120
@@ -85,16 +85,15 @@ target_compile_options(${MICROPY_TARGET} PRIVATE
 set_source_files_properties(core/core1.cpp PROPERTIES COMPILE_OPTIONS "-Wstack-usage=1024")
 
 # Set the target program name and version for the Pico SDK.
-pico_set_program_name(${MICROPY_TARGET} "badge-2025")
-pico_set_program_version(${MICROPY_TARGET} "0.1")
+pico_set_program_name(${TARGET} "badge-2025")
+pico_set_program_version(${TARGET} "0.1")
 
 # Configure pico SDK stdio.
-pico_enable_stdio_uart(${MICROPY_TARGET} 1) # Enable stdio over UART (with the pins we define in our board header).
-pico_enable_stdio_usb(${MICROPY_TARGET} 0)  # No stdio over USB; we set up our own CDC and MSC interfaces.
+pico_enable_stdio_uart(${TARGET} 1) # Enable stdio over UART (with the pins we define in our board header).
+pico_enable_stdio_usb(${TARGET} 0)  # No stdio over USB; we set up our own CDC and MSC interfaces.
 
-# Collect pico SDK libraries we want to use.
-# This is mostly important because we need to tell the micropython CMake code about them later (see mpy.cmake).
-set(PICO_SDK_TARGETS
+# Add pico SDK libraries to our target.
+target_link_libraries(${TARGET}
         hardware_base
         hardware_flash
         hardware_gpio
@@ -124,48 +123,24 @@ set(PICO_SDK_TARGETS
         tinyusb_device
 )
 
-# Add libraries to our target.
-target_link_libraries(${MICROPY_TARGET} ${PICO_SDK_TARGETS})
-
-# Include our main CMake fragment to setup our micropython port and sources.
-include(mpy/mpy.cmake)
-
-# Include our badge code and module.
-include(badge/badge.cmake)
-
-# Add in the LVGL submodule...
-# Tell it explicitly where to find the config header.
-set(LV_CONF_PATH ${CMAKE_CURRENT_LIST_DIR}/badge/lvgl_conf.h)
-target_compile_definitions(${MICROPY_TARGET} PRIVATE LV_CONF_PATH="${LV_CONF_PATH}")
-# Don't build examples or demos.
-set(LV_CONF_BUILD_DISABLE_EXAMPLES ON)
-set(LV_CONF_BUILD_DISABLE_DEMOS ON)
-# Add the LVGL project to our target.
-add_subdirectory(external/lvgl)
-target_link_libraries(${MICROPY_TARGET} lvgl_interface)
-target_include_directories(${MICROPY_TARGET} PRIVATE external)
-
 # Include our assets and add them to our target.
 add_subdirectory(assets)
-target_link_libraries(${MICROPY_TARGET} assets)
+target_link_libraries(${TARGET} assets)
 
 # Ask the pico SDK to generate extra outputs for our target.
-pico_add_extra_outputs(${MICROPY_TARGET})
-
-# Include the micropython build script and commands.
-include(${MICROPY_PY_DIR}/mkrules.cmake)
+pico_add_extra_outputs(${TARGET})
 
 # Ask the toolchain to give us a disassembled output file.
-pico_get_runtime_output_directory(${MICROPY_TARGET} output_path)
+pico_get_runtime_output_directory(${TARGET} output_path)
 add_custom_command(
         TARGET
-            ${MICROPY_TARGET}
+            ${TARGET}
         POST_BUILD
         COMMAND
             ${CMAKE_OBJDUMP}
         ARGS
             -xSC
-            $<TARGET_FILE:${MICROPY_TARGET}>
-            > ${output_path}$<IF:$<BOOL:$<TARGET_PROPERTY:${MICROPY_TARGET},OUTPUT_NAME>>,$<TARGET_PROPERTY:${MICROPY_TARGET},OUTPUT_NAME>,$<TARGET_PROPERTY:${MICROPY_TARGET},NAME>>.txt
+            $<TARGET_FILE:${TARGET}>
+            > ${output_path}$<IF:$<BOOL:$<TARGET_PROPERTY:${TARGET},OUTPUT_NAME>>,$<TARGET_PROPERTY:${TARGET},OUTPUT_NAME>,$<TARGET_PROPERTY:${TARGET},NAME>>.txt
         VERBATIM
 )

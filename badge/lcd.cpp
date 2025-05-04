@@ -16,6 +16,8 @@
 
 namespace lcd::internal
 {
+    Pixel *_onScreenFrame = nullptr;
+    Pixel *_offScreenFrame = nullptr;
 
     void wait_for_spi() {
         while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
@@ -182,6 +184,18 @@ namespace lcd::internal
         simple_cmd_write(CMD_COL_ADDRESS, Address(COL_OFFSET, WIDTH + COL_OFFSET - 1));
         simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
 
+        if (_onScreenFrame == nullptr)
+            _onScreenFrame = new Pixel[WIDTH * HEIGHT];
+
+        if (_offScreenFrame == nullptr)
+            _offScreenFrame = new Pixel[WIDTH * HEIGHT];
+
+        for (int i = 0; i < WIDTH * HEIGHT; i++) {
+            _onScreenFrame[i] = to_pixel(255, 0, 0);
+            _offScreenFrame[i] = to_pixel(0, 255, 0);
+        }
+        end_swap(); // This should make the entire screen red until something else is written to it.
+
         printf("OK\n");
     }
 
@@ -277,17 +291,17 @@ namespace lcd::internal
         simple_cmd_write(CMD_BRIGHTNESS_WRITE, brightness);
     }
 
-    static const Pixel* _frame = nullptr;
-
-    void begin_swap(const Pixel* frame) {
-        _frame = frame;
+    void begin_swap() {
+        const auto tmp = _onScreenFrame;
+        _onScreenFrame = _offScreenFrame;
+        _offScreenFrame = tmp;
     }
 
     void end_swap() {
         select_command();
         write(CMD_MEMORY_WRITE);
         select_data();
-        write(_frame, FRAME_SIZE);
+        write(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
         deselect();
     }
 
@@ -323,6 +337,10 @@ namespace lcd {
         pwm_set_enabled(pwm_slice, false);
         gpio_set_function(LCD_LED_PIN, GPIO_FUNC_SIO);
         gpio_put(LCD_LED_PIN, true);
+    }
+
+    Pixel* get_offscreen_ptr_unsafe() {
+        return _offScreenFrame;
     }
 
 }

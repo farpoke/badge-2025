@@ -209,12 +209,14 @@ namespace lcd
         void set_inversion(bool enabled);
         void set_gamma(int idx);
 
-        void begin_swap(const Pixel* frame);
+        void begin_swap();
         void end_swap();
 
     }
 
     void backlight_on(int pct);
     void backlight_off();
+
+    Pixel* get_offscreen_ptr_unsafe();
 
 }
