@@ -7,9 +7,39 @@
 namespace drawing
 {
 
+    /*
     constexpr Pixel blend_mask(Pixel dst, Pixel src, uint8_t mask) {
         const auto pixel_mask = from_grayscale(mask);
         return (dst & ~pixel_mask) | (src & pixel_mask);
+    }
+    */
+
+    void init_interp_blend() {
+        auto cfg = interp_default_config();
+        interp_config_set_blend(&cfg, true);
+        interp_set_config(interp0, 0, &cfg);
+
+        cfg = interp_default_config();
+        interp_set_config(interp0, 1, &cfg);
+    }
+
+    Pixel blend_alpha(Pixel dst, Pixel src, uint8_t alpha) {
+        // Use interpolator 0 in blend mode to interpolate between source and destination color.
+        interp0->accum[1] = alpha;
+        // Interpolate the red channel (upper 5 bits of 16-bit pixel):
+        interp0->base[0]  = dst & 0xF800;
+        interp0->base[1]  = src & 0xF800;
+        Pixel result      = interp0->peek[1] & 0xF800;
+        // Interpolate the green channel (middle 6 bits of 16-bit pixel):
+        interp0->base[0]  = dst & 0x07E0;
+        interp0->base[1]  = src & 0x07E0;
+        result |= interp0->peek[1] & 0x07E0;
+        // Interpolate the blue channel (lower 5 bits of 16-bit pixel):
+        interp0->base[0]  = dst & 0x001F;
+        interp0->base[1]  = src & 0x001F;
+        result |= interp0->peek[1] & 0x001F;
+        //
+        return result;
     }
 
     void clear(Pixel color) {
@@ -148,18 +178,19 @@ namespace drawing
         }
     }
 
-    void copy_masked(int left, int top, int width, int height, const Pixel *pixels, const uint8_t *mask) {
+    void copy_alpha(int left, int top, int width, int height, const Pixel *pixels, const uint8_t *alpha) {
         const int  stride = width;
         const auto offset = validate_rect(left, top, width, height, stride);
         if (offset < 0)
             return;
         auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
+        init_interp_blend();
         for (int y = 0; y < height; y++) {
             const auto *src_ptr  = &pixels[y * stride + offset];
-            const auto *mask_ptr = &mask[y * stride + offset];
+            const auto *alpha_ptr = &alpha[y * stride + offset];
             auto       *dst_ptr  = &frame_ptr[(top + y) * WIDTH];
             for (int x = 0; x < width; x++) {
-                dst_ptr[left + x] = blend_mask(dst_ptr[left + x], src_ptr[x], mask_ptr[x]);
+                dst_ptr[left + x] = blend_alpha(dst_ptr[left + x], src_ptr[x], alpha_ptr[x]);
             }
         }
     }
@@ -168,10 +199,10 @@ namespace drawing
         if (image.alpha_data == nullptr)
             copy(left, top, image.width, image.height, image.color_data);
         else
-            copy_masked(left, top, image.width, image.height, image.color_data, image.alpha_data);
+            copy_alpha(left, top, image.width, image.height, image.color_data, image.alpha_data);
     }
 
-    void fill_masked(int left, int top, Pixel color, const Image &mask) {
+    void fill_alpha(int left, int top, Pixel color, const Image &mask) {
         int        width  = mask.width;
         int        height = mask.height;
         const int  stride = mask.width;
@@ -182,11 +213,12 @@ namespace drawing
         if (offset < 0)
             return;
         auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
+        init_interp_blend();
         for (int y = top; y < top + height; y++) {
             const auto *src_ptr = &data[y * stride + offset];
             auto       *dst_ptr = &frame_ptr[y * WIDTH];
             for (int x = left; x < left + width; x++) {
-                dst_ptr[x] = blend_mask(dst_ptr[x], color, src_ptr[x]);
+                dst_ptr[x] = blend_alpha(dst_ptr[x], color, src_ptr[x]);
             }
         }
     }

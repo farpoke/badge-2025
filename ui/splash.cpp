@@ -60,15 +60,13 @@ namespace ui
             }
         }
 
-        // if (time_ms > DURATION_MS)
-        //     pop_state();
+        if (time_ms > DURATION_MS)
+            pop_state();
     }
 
     void SplashScreen::draw() {
         drawing::clear(0);
-        // drawing::draw_image(0, 0, bg_image);
-        drawing::draw_image(0, 0, image::splash_bg);
-        drawing::fill_masked(0, 0, 0, image::splash_fg);
+        drawing::draw_image(0, 0, bg_image);
     }
 
 } // namespace ui
