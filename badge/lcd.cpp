@@ -84,17 +84,19 @@ namespace lcd::internal
         }
     }
 
-    void write_dma(const void* data, int n_bytes) {
+    void write_dma16(const void* data, int n_bytes) {
         dir_out();
+        spi_set_format(LCD_SPI_PORT, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
         dma_channel_configure(
             txDmaChannel,
             &txDmaConfig,
             &spi_get_hw(LCD_SPI_PORT)->dr,
             data,
-            n_bytes,
+            n_bytes / 2,
             true
         );
         dma_channel_wait_for_finish_blocking(txDmaChannel);
+        spi_set_format(LCD_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
     }
 
     void begin_read_sequence() {
@@ -156,7 +158,7 @@ namespace lcd::internal
         
         const auto baud = spi_init(LCD_SPI_PORT, SPI_FREQ);
         printf(" (%d.%d MHz) ", baud / 1'000'000, (baud / 100'000) % 10);
-        
+
         gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
         gpio_set_function(LCD_SPI_OUT_PIN, GPIO_FUNC_SPI);
         gpio_set_function(LCD_SPI_IN_PIN,  GPIO_FUNC_SPI);
@@ -172,9 +174,11 @@ namespace lcd::internal
         gpio_set_dir_out_masked(sio_mask);
         gpio_put_masked(sio_mask, sio_mask);
 
+        backlight_off();
+
         txDmaChannel = dma_claim_unused_channel(true);
         txDmaConfig = dma_channel_get_default_config(txDmaChannel);
-        channel_config_set_transfer_data_size(&txDmaConfig, DMA_SIZE_8);
+        channel_config_set_transfer_data_size(&txDmaConfig, DMA_SIZE_16);
         channel_config_set_dreq(&txDmaConfig, spi_get_dreq(LCD_SPI_PORT, true));
 
         printf("OK\n");
@@ -319,7 +323,7 @@ namespace lcd::internal
         select_command();
         write(CMD_MEMORY_WRITE);
         select_data();
-        write(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
+        write_dma16(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
         deselect();
     }
 

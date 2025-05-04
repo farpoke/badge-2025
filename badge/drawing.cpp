@@ -1,11 +1,13 @@
 #include "drawing.hpp"
 
-#include <math.h>
+#include <cmath>
+
+#include <hardware/interp.h>
 
 namespace drawing
 {
 
-    constexpr Pixel blend(Pixel dst, Pixel src, uint8_t mask) {
+    constexpr Pixel blend_mask(Pixel dst, Pixel src, uint8_t mask) {
         const auto pixel_mask = from_grayscale(mask);
         return (dst & ~pixel_mask) | (src & pixel_mask);
     }
@@ -157,7 +159,7 @@ namespace drawing
             const auto *mask_ptr = &mask[y * stride + offset];
             auto       *dst_ptr  = &frame_ptr[(top + y) * WIDTH];
             for (int x = 0; x < width; x++) {
-                dst_ptr[left + x] = blend(dst_ptr[left + x], src_ptr[x], mask_ptr[x]);
+                dst_ptr[left + x] = blend_mask(dst_ptr[left + x], src_ptr[x], mask_ptr[x]);
             }
         }
     }
@@ -184,7 +186,7 @@ namespace drawing
             const auto *src_ptr = &data[y * stride + offset];
             auto       *dst_ptr = &frame_ptr[y * WIDTH];
             for (int x = left; x < left + width; x++) {
-                dst_ptr[x] = blend(dst_ptr[x], color, src_ptr[x]);
+                dst_ptr[x] = blend_mask(dst_ptr[x], color, src_ptr[x]);
             }
         }
     }

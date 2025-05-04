@@ -149,10 +149,7 @@ namespace lcd
     constexpr Pixel to_pixel(uint32_t rgb) {
         // 8-8-8 : RRRR Rrrr GGGG GGgg BBBB Bbbb
         // 5-6-5 :           RRRR RGGG GGGB BBBB
-        const uint16_t rgb565 = ((rgb & 0xF80000) >> 8) | ((rgb & 0x00F800) >> 5) | ((rgb & 0x0000F8) >> 3);
-        // System is little-endian, so swap bytes to make the data sent to the LCD driver correct.
-        const uint16_t swapped = (rgb565 >> 8) | (rgb565 << 8);
-        return swapped;
+        return ((rgb & 0xF80000) >> 8) | ((rgb & 0x00F800) >> 5) | ((rgb & 0x0000F8) >> 3);
     }
 
     constexpr Pixel to_pixel(uint8_t r, uint8_t g, uint8_t b) { return to_pixel(r << 16 | g << 8 | b); }

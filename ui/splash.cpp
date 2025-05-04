@@ -26,9 +26,10 @@ namespace ui
             delta_ms--;
             time_ms++;
 
-            if (time_ms % 3 != 0)
+            if (time_ms % TICK_DIVIDER != 0)
                 continue;
-            const int diagonal = time_ms / 3 - 1;
+
+            int diagonal = time_ms / TICK_DIVIDER - 1;
 
             if (diagonal <= lcd::WIDTH + lcd::HEIGHT) {
                 for (int y = 0; y < lcd::HEIGHT; y++) {
@@ -38,22 +39,36 @@ namespace ui
                 }
             }
 
-            if (diagonal >= STRIPE_SPACING && diagonal - STRIPE_SPACING <= lcd::WIDTH + lcd::HEIGHT) {
+            diagonal -= DELAY_1;
+
+            if (diagonal >= 0 && diagonal <= lcd::WIDTH + lcd::HEIGHT) {
                 for (int y = 0; y < lcd::HEIGHT; y++) {
-                    const int x = diagonal - y - STRIPE_SPACING;
+                    const int x = diagonal - y;
                     if (x >= 0 && x < lcd::WIDTH)
                         mask[y * lcd::WIDTH + x] = image::splash_fg.alpha_data[y * lcd::WIDTH + x];
                 }
             }
+
+            diagonal -= DELAY_2;
+
+            if (diagonal >= 0 && diagonal <= lcd::WIDTH + lcd::HEIGHT) {
+                for (int y = 0; y < lcd::HEIGHT; y++) {
+                    const int x = diagonal - y;
+                    if (x >= 0 && x < lcd::WIDTH)
+                        mask[y * lcd::WIDTH + x] = 0;
+                }
+            }
         }
 
-        if (time_ms > DURATION_MS)
-            pop_state();
+        // if (time_ms > DURATION_MS)
+        //     pop_state();
     }
 
     void SplashScreen::draw() {
         drawing::clear(0);
-        drawing::draw_image(0, 0, bg_image);
+        // drawing::draw_image(0, 0, bg_image);
+        drawing::draw_image(0, 0, image::splash_bg);
+        drawing::fill_masked(0, 0, 0, image::splash_fg);
     }
 
 } // namespace ui

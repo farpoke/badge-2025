@@ -107,6 +107,7 @@ target_link_libraries(${TARGET}
         hardware_dma
         hardware_flash
         hardware_gpio
+        hardware_interp
         hardware_irq
         hardware_pwm
         hardware_regs

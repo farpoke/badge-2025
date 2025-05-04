@@ -10,7 +10,9 @@ namespace ui
     class SplashScreen final : public State {
     public:
         static constexpr auto DURATION_MS = 2'000;
-        static constexpr auto STRIPE_SPACING = 100;
+        static constexpr auto TICK_DIVIDER = 2;
+        static constexpr auto DELAY_1 = 100;
+        static constexpr auto DELAY_2 = 500;
 
         SplashScreen();
         ~SplashScreen() override;
