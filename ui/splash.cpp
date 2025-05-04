@@ -1,32 +1,59 @@
 #include "splash.hpp"
 #include "ui.hpp"
 
+#include <cstring>
+
 #include <assets.hpp>
 #include <badge/drawing.hpp>
 
 namespace ui
 {
 
+    SplashScreen::SplashScreen() {
+        mask = new uint8_t[lcd::WIDTH * lcd::HEIGHT];
+        memset(mask, 0, lcd::WIDTH * lcd::HEIGHT);
+
+        bg_image = image::splash_bg;
+        bg_image.alpha_data = mask;
+    }
+
+    SplashScreen::~SplashScreen() {
+        delete[] mask;
+    }
+
     void SplashScreen::update(int delta_ms) {
-        State::update(delta_ms);
-        if (time_ms >= DURATION_MS)
+        while (delta_ms > 0) {
+            delta_ms--;
+            time_ms++;
+
+            if (time_ms % 3 != 0)
+                continue;
+            const int diagonal = time_ms / 3 - 1;
+
+            if (diagonal <= lcd::WIDTH + lcd::HEIGHT) {
+                for (int y = 0; y < lcd::HEIGHT; y++) {
+                    const int x = diagonal - y;
+                    if (x >= 0 && x < lcd::WIDTH)
+                        mask[y * lcd::WIDTH + x] = 255 - image::splash_fg.alpha_data[y * lcd::WIDTH + x];
+                }
+            }
+
+            if (diagonal >= STRIPE_SPACING && diagonal - STRIPE_SPACING <= lcd::WIDTH + lcd::HEIGHT) {
+                for (int y = 0; y < lcd::HEIGHT; y++) {
+                    const int x = diagonal - y - STRIPE_SPACING;
+                    if (x >= 0 && x < lcd::WIDTH)
+                        mask[y * lcd::WIDTH + x] = image::splash_fg.alpha_data[y * lcd::WIDTH + x];
+                }
+            }
+        }
+
+        if (time_ms > DURATION_MS)
             pop_state();
     }
 
     void SplashScreen::draw() {
-        drawing::clear(lcd::to_pixel(20, 40, 60));
-        drawing::draw_image(0, 0, image::splash_bg);
-        drawing::fill_masked(0, 0, lcd::from_grayscale(0), image::splash_fg);
-        drawing::fill_rect(20, 20, 81, 81, lcd::to_pixel(20, 30, 40));
-        drawing::draw_rect(25, 25, 71, 71, lcd::to_pixel(255, 128, 0));
-        constexpr auto line_color = lcd::to_pixel(0, 255, 255);
-        for (int i = 0; i < 70; i += 10) {
-            auto offset = (i + time_ms / 20) % 70;
-            drawing::draw_line_aa(60, 60, 25, 25 + offset, line_color);
-            drawing::draw_line_aa(60, 60, 95, 95 - offset, line_color);
-            drawing::draw_line_aa(60, 60, 95 - offset, 25, line_color);
-            drawing::draw_line_aa(60, 60, 25 + offset, 95, line_color);
-        }
+        drawing::clear(0);
+        drawing::draw_image(0, 0, bg_image);
     }
 
-}
+} // namespace ui

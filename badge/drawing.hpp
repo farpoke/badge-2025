@@ -29,6 +29,8 @@ namespace drawing
     void fill_circle(int x, int y, int radius, Pixel color);
 
     void copy(int left, int top, int width, int height, const Pixel* pixels);
+    void copy_masked(int left, int top, int width, int height, const Pixel* pixels, const uint8_t* mask);
+
     void draw_image(int left, int top, const Image& image);
     void fill_masked(int left, int top, Pixel color, const Image& mask);
 

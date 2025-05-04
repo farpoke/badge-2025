@@ -84,6 +84,14 @@ target_compile_options(${TARGET} PRIVATE
 # core1 has a much smaller stack, so warn about much smaller stack usage for that code unit.
 set_source_files_properties(core/core1.cpp PROPERTIES COMPILE_OPTIONS "-Wstack-usage=1024")
 
+# Ask the compiler to always optimize some more critical pieces of code.
+set_source_files_properties(
+        badge/drawing.cpp
+        badge/font.cpp
+        badge/lcd.cpp
+        PROPERTIES COMPILE_OPTIONS "-O2"
+)
+
 # Set the target program name and version for the Pico SDK.
 pico_set_program_name(${TARGET} "badge-2025")
 pico_set_program_version(${TARGET} "0.1")
@@ -95,6 +103,8 @@ pico_enable_stdio_usb(${TARGET} 0)  # No stdio over USB; we set up our own CDC a
 # Add pico SDK libraries to our target.
 target_link_libraries(${TARGET}
         hardware_base
+        hardware_clocks
+        hardware_dma
         hardware_flash
         hardware_gpio
         hardware_irq

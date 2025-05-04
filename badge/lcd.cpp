@@ -1,9 +1,12 @@
 #include "lcd.hpp"
 
 #include <cstdio>
+
+#include <hardware/dma.h>
 #include <hardware/gpio.h>
 #include <hardware/pwm.h>
 #include <hardware/spi.h>
+
 #include <pico/stdlib.h>
 
 #define WRITE_VALUE(name, value) gpio_put(name, (value) ? 1 : 0)
@@ -16,6 +19,9 @@
 
 namespace lcd::internal
 {
+    int txDmaChannel = -1;
+    dma_channel_config txDmaConfig = {};
+
     Pixel *_onScreenFrame = nullptr;
     Pixel *_offScreenFrame = nullptr;
 
@@ -78,6 +84,19 @@ namespace lcd::internal
         }
     }
 
+    void write_dma(const void* data, int n_bytes) {
+        dir_out();
+        dma_channel_configure(
+            txDmaChannel,
+            &txDmaConfig,
+            &spi_get_hw(LCD_SPI_PORT)->dr,
+            data,
+            n_bytes,
+            true
+        );
+        dma_channel_wait_for_finish_blocking(txDmaChannel);
+    }
+
     void begin_read_sequence() {
         wait_for_spi();
         // Lower baud rate?
@@ -135,7 +154,8 @@ namespace lcd::internal
     void init() {
         printf("> lcd::init ");
         
-        spi_init(LCD_SPI_PORT, SPI_FREQ);
+        const auto baud = spi_init(LCD_SPI_PORT, SPI_FREQ);
+        printf(" (%d.%d MHz) ", baud / 1'000'000, (baud / 100'000) % 10);
         
         gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
         gpio_set_function(LCD_SPI_OUT_PIN, GPIO_FUNC_SPI);
@@ -151,6 +171,11 @@ namespace lcd::internal
         gpio_set_function_masked(sio_mask, GPIO_FUNC_SIO);
         gpio_set_dir_out_masked(sio_mask);
         gpio_put_masked(sio_mask, sio_mask);
+
+        txDmaChannel = dma_claim_unused_channel(true);
+        txDmaConfig = dma_channel_get_default_config(txDmaChannel);
+        channel_config_set_transfer_data_size(&txDmaConfig, DMA_SIZE_8);
+        channel_config_set_dreq(&txDmaConfig, spi_get_dreq(LCD_SPI_PORT, true));
 
         printf("OK\n");
 
@@ -169,16 +194,14 @@ namespace lcd::internal
         WRITE_LOW(LCD_NRST_PIN);
         sleep_ms(1);
         WRITE_HIGH(LCD_NRST_PIN);
-        sleep_ms(20);
+        sleep_ms(150);
 
         // Set driver pixel format to 16-bit color (5 red, 6 green, 5 blue).
         simple_cmd_write(CMD_INTERFACE_PIXEL_FORMAT, 0x55);
-        sleep_ms(10);
 
         // Tell the LCD driver to flip the y-axis (MY) and swap x and y (MV).
         // This puts the origin in the top left with the screen rotated to "landscape mode".
         simple_cmd_write(CMD_MEMORY_DATA_AC, 0b1010'0000);
-        sleep_ms(10);
 
         // Set column and row addresses to match display size.
         simple_cmd_write(CMD_COL_ADDRESS, Address(COL_OFFSET, WIDTH + COL_OFFSET - 1));
@@ -284,11 +307,6 @@ namespace lcd::internal
     void set_gamma(int idx) {
         printf("> Gamma Curve = %d\n", idx);
         simple_cmd_write<uint8_t>(CMD_GAMMA_SET, 1 << (idx & 3));
-    }
-
-    void set_brightness(uint8_t brightness) {
-        printf("> Brightness = %d\n", brightness);
-        simple_cmd_write(CMD_BRIGHTNESS_WRITE, brightness);
     }
 
     void begin_swap() {
