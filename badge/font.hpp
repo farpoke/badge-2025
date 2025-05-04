@@ -1,11 +1,30 @@
 #pragma once
 
 #include <string_view>
+#include <memory>
 
 #include "font_data.hpp"
 
+#include <badge/pixel.hpp>
+
 namespace font
 {
+
+    struct TextDraw {
+        TextDraw() = default;
+        TextDraw(const TextDraw&) = delete;
+        TextDraw(TextDraw&&) = default;
+        ~TextDraw() = default;
+
+        TextDraw& operator=(const TextDraw&) = delete;
+        TextDraw& operator=(TextDraw&&) = default;
+
+        int dx = 0;
+        int dy = 0;
+        int width = 0;
+        int height = 0;
+        std::unique_ptr<uint8_t[]> alpha = {};
+    };
 
     class Font {
     public:
@@ -13,7 +32,7 @@ namespace font
         explicit constexpr Font(const data::Font& data) : data(data) {}
         ~Font() = default;
 
-        void draw(int x, int y, std::string_view text) const;
+        TextDraw render(std::string_view text) const;
 
     private:
         const data::Font &data;

@@ -1,16 +1,14 @@
 #pragma once
 
-#include "lcd.hpp"
+#include "pixel.hpp"
 
 namespace image
 {
-    using lcd::Pixel;
-
     struct Image {
-        int width;
-        int height;
-        const Pixel* color_data;
-        const uint8_t* alpha_data;
+        int width = 0;
+        int height = 0;
+        const Pixel* color_data = nullptr;
+        const uint8_t* alpha_data = nullptr;
     };
 
 }

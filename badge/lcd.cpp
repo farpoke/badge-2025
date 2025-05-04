@@ -1,6 +1,7 @@
 #include "lcd.hpp"
 
 #include <cstdio>
+#include <cstring>
 
 #include <hardware/dma.h>
 #include <hardware/gpio.h>
@@ -217,10 +218,8 @@ namespace lcd::internal
         if (_offScreenFrame == nullptr)
             _offScreenFrame = new Pixel[WIDTH * HEIGHT];
 
-        for (int i = 0; i < WIDTH * HEIGHT; i++) {
-            _onScreenFrame[i] = to_pixel(255, 0, 0);
-            _offScreenFrame[i] = to_pixel(0, 255, 0);
-        }
+        memset(_onScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
+        memset(_offScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
         end_swap(); // This should make the entire screen red until something else is written to it.
 
         printf("OK\n");

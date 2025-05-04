@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "pixel.hpp"
+
 namespace lcd
 {
 
@@ -143,18 +145,6 @@ namespace lcd
     static_assert(sizeof(DisplayID) == 3);
     static_assert(sizeof(DisplayStatus) == 4);
     static_assert(sizeof(Address) == 4);
-
-    using Pixel = uint16_t;
-
-    constexpr Pixel to_pixel(uint32_t rgb) {
-        // 8-8-8 : RRRR Rrrr GGGG GGgg BBBB Bbbb
-        // 5-6-5 :           RRRR RGGG GGGB BBBB
-        return ((rgb & 0xF80000) >> 8) | ((rgb & 0x00F800) >> 5) | ((rgb & 0x0000F8) >> 3);
-    }
-
-    constexpr Pixel to_pixel(uint8_t r, uint8_t g, uint8_t b) { return to_pixel(r << 16 | g << 8 | b); }
-
-    constexpr Pixel from_grayscale(uint8_t gray) { return to_pixel(gray, gray, gray); }
 
     namespace internal
     {

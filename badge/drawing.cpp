@@ -14,7 +14,7 @@ namespace drawing
     }
     */
 
-    void init_interp_blend() {
+    void init_blend_alpha() {
         auto cfg = interp_default_config();
         interp_config_set_blend(&cfg, true);
         interp_set_config(interp0, 0, &cfg);
@@ -163,6 +163,42 @@ namespace drawing
         }
     }
 
+    void fill_rect(int left, int top, int width, int height, Pixel color, uint8_t alpha) {
+        if (alpha == 0)
+            return;
+        if (alpha == 255)
+            fill_rect(left, top, width, height, color);
+        const auto offset = validate_rect(left, top, width, height);
+        if (offset < 0)
+            return;
+        init_blend_alpha();
+        auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
+        for (int y = top; y < top + height; y++) {
+            auto *ptr = &frame_ptr[y * WIDTH];
+            for (int x = left; x < left + width; x++) {
+                ptr[x] = blend_alpha(ptr[x], color, alpha);
+            }
+        }
+    }
+
+    void fill_rect(int left, int top, int width, int height, Pixel color, const uint8_t* alpha) {
+        const int  stride = width;
+        if (alpha == nullptr)
+            return;
+        const auto offset = validate_rect(left, top, width, height, stride);
+        if (offset < 0)
+            return;
+        auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
+        init_blend_alpha();
+        for (int y = 0; y < height; y++) {
+            const auto *src_ptr = &alpha[y * stride + offset];
+            auto       *dst_ptr = &frame_ptr[(y + top) * WIDTH + left];
+            for (int x = 0; x < width; x++) {
+                dst_ptr[x] = blend_alpha(dst_ptr[x], color, src_ptr[x]);
+            }
+        }
+    }
+
     void copy(int left, int top, int width, int height, const Pixel *pixels) {
         const int  stride = width;
         const auto offset = validate_rect(left, top, width, height, stride);
@@ -184,7 +220,7 @@ namespace drawing
         if (offset < 0)
             return;
         auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
-        init_interp_blend();
+        init_blend_alpha();
         for (int y = 0; y < height; y++) {
             const auto *src_ptr  = &pixels[y * stride + offset];
             const auto *alpha_ptr = &alpha[y * stride + offset];
@@ -202,25 +238,10 @@ namespace drawing
             copy_alpha(left, top, image.width, image.height, image.color_data, image.alpha_data);
     }
 
-    void fill_alpha(int left, int top, Pixel color, const Image &mask) {
-        int        width  = mask.width;
-        int        height = mask.height;
-        const int  stride = mask.width;
-        const auto data   = mask.alpha_data;
-        if (data == nullptr)
-            return;
-        const auto offset = validate_rect(left, top, width, height, stride);
-        if (offset < 0)
-            return;
-        auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
-        init_interp_blend();
-        for (int y = top; y < top + height; y++) {
-            const auto *src_ptr = &data[y * stride + offset];
-            auto       *dst_ptr = &frame_ptr[y * WIDTH];
-            for (int x = left; x < left + width; x++) {
-                dst_ptr[x] = blend_alpha(dst_ptr[x], color, src_ptr[x]);
-            }
-        }
+    void draw_text(int x, int y, Pixel bg, uint8_t bg_alpha, Pixel fg, const TextDraw &render) {
+        fill_rect(x + render.dx, y + render.dy, render.width, render.height, bg, bg_alpha);
+        fill_rect(x + render.dx, y + render.dy, render.width, render.height, fg, render.alpha.get());
     }
+
 
 } // namespace drawing

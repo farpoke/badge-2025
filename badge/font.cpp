@@ -16,34 +16,36 @@ namespace font
     constexpr Font noto_sans(data::noto_sans);
     constexpr Font noto_sans_cm(data::noto_sans_cm);
 
-    void Font::draw(int x, int y, std::string_view text) const {
+    TextDraw Font::render(std::string_view text) const {
         if (text.empty())
-            return;
+            return {};
 
-        const int left = x + data.get(text[0]).offset_x - 1;
-        int right = left;
-        int top = y - data.ascent - 1;
-        int bottom = y + data.descent + 1;
+        TextDraw result = {};
+
+        result.dx = data.get(text[0]).offset_x - 1;
+        int right = result.dx;
+        result.dy = -data.ascent - 1;
+        int bottom = data.descent + 1;
 
         data::Glyph glyph;
         for (char ch : text) {
             glyph = data.get(ch);
             right += glyph.advance;
-            top = std::min(top, y + glyph.offset_y - 1);
-            bottom = std::max(bottom, y + glyph.height + glyph.offset_y + 1);
+            result.dy = std::min(result.dy, glyph.offset_y - 1);
+            bottom = std::max(bottom, glyph.height + glyph.offset_y + 1);
         }
         right += glyph.width - glyph.advance - glyph.offset_x + 1;
 
-        const int text_width = right - left + 1;
-        const int text_height = bottom - top + 1;
+        result.width = right - result.dx + 1;
+        result.height = bottom - result.dy + 1;
 
-        auto text_pixels = std::unique_ptr<Pixel[]>(new Pixel[text_width * text_height]);
-        memset(text_pixels.get(), 0, text_width * text_height * sizeof(Pixel));
+        result.alpha = std::unique_ptr<uint8_t[]>(new uint8_t[result.width * result.height]);
+        memset(result.alpha.get(), 0, result.width * result.height);
 
         if (data.bpp == 1) {
             constexpr auto pixels_per_value = sizeof(data::GlyphDataType) * 8;
             int x0 = 1;
-            int y0 = y - top + 1;
+            int y0 = -result.dy + 1;
             for (char ch : text) {
                 glyph = data.get(ch);
 
@@ -55,8 +57,8 @@ namespace font
                         if (!bit) continue;
                         const auto px = x0 + glyph.offset_x + col;
                         const auto py = y0 + glyph.offset_y + row;
-                        if (px >= 0 && px < text_width && py >= 0 && py < text_height) {
-                            text_pixels[py * text_width + px] = ~0;
+                        if (px >= 0 && px < result.width && py >= 0 && py < result.height) {
+                            result.alpha[py * result.width + px] = 255;
                         }
                     }
                 }
@@ -66,16 +68,15 @@ namespace font
         }
         else {
             const auto n_colors = 1 << data.bpp;
-            auto colors = std::unique_ptr<Pixel[]>(new Pixel[n_colors]);
-            colors[0] = 0;
-            colors[n_colors - 1] = ~0;
+            auto alpha_lut = std::unique_ptr<uint8_t[]>(new uint8_t[n_colors]);
+            alpha_lut[0] = 0;
+            alpha_lut[n_colors - 1] = 255;
             for (int i = 1; i < n_colors - 1; i++) {
-                const auto value = (255 / n_colors) * i;
-                colors[i] = from_grayscale(value);
+                alpha_lut[i] = i << (8 - data.bpp);
             }
 
             int x0 = 1;
-            int y0 = y - top + 1;
+            int y0 = -result.dy + 1;
             for (char ch : text) {
                 glyph = data.get(ch);
 
@@ -94,8 +95,8 @@ namespace font
                         if (bits == 0) continue;
                         const auto px = x0 + glyph.offset_x + col;
                         const auto py = y0 + glyph.offset_y + row;
-                        if (px >= 0 && px < text_width && py >= 0 && py < text_height) {
-                            text_pixels[py * text_width + px] |= colors[bits];
+                        if (px >= 0 && px < result.width && py >= 0 && py < result.height) {
+                            result.alpha[py * result.width + px] |= alpha_lut[bits];
                         }
                     }
                 }
@@ -104,7 +105,7 @@ namespace font
             }
         }
 
-        copy(left, top, text_width, text_height, text_pixels.get());
+        return result;
     }
 
 }
