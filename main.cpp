@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include <pico/bootrom.h>
 #include <pico/stdlib.h>
 #include <pico/time.h>
 
@@ -11,6 +12,7 @@
 #include <badge/drawing.hpp>
 #include <badge/font.hpp>
 #include <core/core1.hpp>
+#include <ui/code_entry.hpp>
 #include <ui/menu.hpp>
 #include <ui/readme.hpp>
 #include <ui/splash.hpp>
@@ -59,20 +61,22 @@ public:
     core1::reset_and_launch();
 
     const auto menu = ui::make_state<ui::MainMenu>();
-    menu->add_item("Font Test", ui::make_state<FontTest>());
     menu->add_item("README", ui::make_state<ui::Readme>());
-    menu->add_item("Code Entry", nullptr);
+    menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
+    menu->add_item("Found Flags", nullptr);
     menu->add_item("Snake", nullptr);
     menu->add_item("Flappy", nullptr);
     menu->add_item("Othello", nullptr);
     menu->add_item("Blocks", nullptr);
     menu->add_item("GPIO Control", nullptr);
     menu->add_item("SAO Control", nullptr);
+    // menu->add_item("Font Test", ui::make_state<FontTest>());
+    menu->add_item("Bootloader", []{
+        rom_reset_usb_boot_extra(-1, 0, false);
+    });
 
-    //ui::push_new_state<FontTest>();
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
-
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();

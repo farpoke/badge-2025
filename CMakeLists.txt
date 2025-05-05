@@ -54,6 +54,7 @@ add_executable(${TARGET}
         core/irq.cpp
         fs/fs.cpp
         fs/msc.cpp
+        ui/code_entry.cpp
         ui/menu.cpp
         ui/readme.cpp
         ui/splash.cpp

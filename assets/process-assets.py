@@ -25,7 +25,10 @@ class AssetCollection:
             self.assets[name] = FontAsset(name, **spec)
 
         for name, spec in assets_spec['images'].items():
-            self.assets[name] = ImageAsset(name, **spec)
+            if isinstance(spec, str):
+                self.assets[name] = ImageAsset(name, image=spec)
+            else:
+                self.assets[name] = ImageAsset(name, **spec)
 
     def all_dependencies(self):
         for item in self._fs_items:

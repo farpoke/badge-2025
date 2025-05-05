@@ -16,13 +16,13 @@ namespace ui
         if (buttons::b())
             pop_state();
         else if (buttons::up_current()) {
-            scroll -= delta_ms / 10;
+            scroll -= delta_ms / 5;
             if (scroll < 0)
                 scroll = 0;
             is_scrolling = true;
         }
         else if (buttons::down_current()) {
-            scroll += delta_ms / 10;
+            scroll += delta_ms / 5;
             if (scroll > max_scroll)
                 scroll = max_scroll;
             is_scrolling = true;
@@ -51,7 +51,7 @@ namespace ui
             const int bar_height = line_height;
             const int bar_space = lcd::HEIGHT - bar_height;
             const int bar_offset = bar_space * scroll / max_scroll;
-            drawing::fill_rect(lcd::WIDTH - 4, bar_offset, 2, bar_height, rgb24(0xFF8800));
+            drawing::fill_rect(lcd::WIDTH - 3, bar_offset, 1, bar_height, rgb24(0xFF8800));
         }
     }
 

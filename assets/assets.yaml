@@ -32,14 +32,22 @@ images:
   splash_fg:
     image: gfx/splash-fg.png
     color: false
-    alpha: true
   splash_bg:
     image: gfx/splash-bg.png
+    alpha: false
 
-  triangle_right:
-    image: gfx/icons_0.png
-    alpha: true
-
-  triangle_left:
-    image: gfx/icons_1.png
-    alpha: true
+  triangle_right: gfx/icons_00.png
+  triangle_left:  gfx/icons_01.png
+  flag:           gfx/icons_02.png
+  green_check:    gfx/icons_03.png
+  red_x:          gfx/icons_04.png
+  del_symbol:     gfx/icons_05.png
+  button_a:       gfx/icons_06.png
+  button_b:       gfx/icons_07.png
+  button_c:       gfx/icons_08.png
+  button_d:       gfx/icons_09.png
+  button_up:      gfx/icons_10.png
+  button_right:   gfx/icons_11.png
+  button_down:    gfx/icons_12.png
+  button_left:    gfx/icons_13.png
+  button_push:    gfx/icons_14.png

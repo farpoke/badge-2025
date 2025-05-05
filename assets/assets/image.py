@@ -48,7 +48,7 @@ def extract_data(path: Path):
 
 
 class ImageAsset(AssetBase):
-    def __init__(self, name, *, image: str, color: bool = True, alpha: bool = False):
+    def __init__(self, name, *, image: str, color: bool = True, alpha: bool = True):
         super().__init__()
 
         self.name = name

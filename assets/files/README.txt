@@ -3,7 +3,8 @@
 
                        https://hack.gbgay.com
 
-This is the badge for the HackGBGay event of 2025.
+This is the badge for the HackGBGay event of 2025. It has some small games,
+and allows you to enter and display flags.
 
 Flags are codes that can be found by solving the various available challenges.
 They always* start with the text "gbgay{" and end with "}". The text inbetween
