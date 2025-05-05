@@ -5,16 +5,16 @@
 namespace buttons
 {
     constexpr uint32_t MASK = 0
-        | (1 << BTN_LEFT_UP)
-        | (1 << BTN_LEFT_DOWN)
-        | (1 << BTN_LEFT_LEFT)
-        | (1 << BTN_LEFT_RIGHT)
-        | (1 << BTN_LEFT_PUSH)
-        | (1 << BTN_RIGHT_UP)
-        | (1 << BTN_RIGHT_DOWN)
-        | (1 << BTN_RIGHT_LEFT)
-        | (1 << BTN_RIGHT_RIGHT)
-        | (1 << BTN_RIGHT_PUSH);
+        | (1 << BTN_UP)
+        | (1 << BTN_DOWN)
+        | (1 << BTN_LEFT)
+        | (1 << BTN_RIGHT)
+        | (1 << BTN_PUSH)
+        | (1 << BTN_A)
+        | (1 << BTN_B)
+        | (1 << BTN_C)
+        | (1 << BTN_D)
+        | (1 << BTN_ACTION_PUSH);
 
     uint32_t current_state = 0;
     uint32_t previous_state = 0;
@@ -33,8 +33,8 @@ namespace buttons
     }
 
     void init() {
-        init_common(BTN_LEFT_COMMON);
-        init_common(BTN_RIGHT_COMMON);
+        init_common(BTN_NAV_COMMON);
+        init_common(BTN_ACTION_COMMON);
         for (int i = 0; i < 32; i++)
             if (MASK & (1 << i))
                 init_input(i);

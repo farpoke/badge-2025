@@ -36,3 +36,10 @@ images:
   splash_bg:
     image: gfx/splash-bg.png
 
+  triangle_right:
+    image: gfx/icons_0.png
+    alpha: true
+
+  triangle_left:
+    image: gfx/icons_1.png
+    alpha: true

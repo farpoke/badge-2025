@@ -25,7 +25,7 @@ namespace ui
     using StatePtr = std::shared_ptr<State>;
 
     template<typename T, typename... Args>
-    inline StatePtr make_state(Args&& ... args) {
+    std::shared_ptr<T> make_state(Args&& ... args) {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 

@@ -11,6 +11,7 @@
 #include <badge/drawing.hpp>
 #include <badge/font.hpp>
 #include <core/core1.hpp>
+#include <ui/menu.hpp>
 #include <ui/splash.hpp>
 #include <ui/ui.hpp>
 #include <usb/usb.hpp>
@@ -19,6 +20,7 @@ class FontTest final : public ui::State {
 public:
     void draw() override {
         drawing::draw_image(0, 0, image::splash_bg);
+        drawing::fill_rect(0, 0, lcd::WIDTH, lcd::HEIGHT, COLOR_BLACK, 150);
 
         auto x = 2;
         auto y = 2;
@@ -49,8 +51,20 @@ public:
 
     core1::reset_and_launch();
 
-    ui::push_new_state<FontTest>();
+    const auto menu = ui::make_state<ui::MainMenu>();
+    menu->add_item("README", nullptr);
+    menu->add_item("Code Entry", nullptr);
+    menu->add_item("Snake", nullptr);
+    menu->add_item("Flappy", nullptr);
+    menu->add_item("Othello", nullptr);
+    menu->add_item("Blocks", nullptr);
+    menu->add_item("GPIO Control", nullptr);
+    menu->add_item("SAO Control", nullptr);
+
+    //ui::push_new_state<FontTest>();
+    ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
+
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();
