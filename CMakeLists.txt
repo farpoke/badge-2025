@@ -54,6 +54,7 @@ add_executable(${TARGET}
         core/irq.cpp
         fs/fs.cpp
         fs/msc.cpp
+        games/snek.cpp
         ui/code_entry.cpp
         ui/menu.cpp
         ui/readme.cpp
@@ -131,6 +132,7 @@ target_link_libraries(${TARGET}
         pico_platform_compiler
         pico_platform_panic
         pico_platform_sections
+        pico_rand
         pico_stdio
         pico_stdlib
         pico_time

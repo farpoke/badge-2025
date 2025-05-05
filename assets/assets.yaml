@@ -51,3 +51,5 @@ images:
   button_down:    gfx/icons_12.png
   button_left:    gfx/icons_13.png
   button_push:    gfx/icons_14.png
+  snek_fruit:     gfx/icons_15.png
+  nav_4way:       gfx/icons_16.png

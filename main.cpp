@@ -12,6 +12,7 @@
 #include <badge/drawing.hpp>
 #include <badge/font.hpp>
 #include <core/core1.hpp>
+#include <games/snek.hpp>
 #include <ui/code_entry.hpp>
 #include <ui/menu.hpp>
 #include <ui/readme.hpp>
@@ -64,7 +65,7 @@ public:
     menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
     menu->add_item("Found Flags", nullptr);
-    menu->add_item("Snake", nullptr);
+    menu->add_item("Snek", ui::make_state<snek::SnekGame>());
     menu->add_item("Flappy", nullptr);
     menu->add_item("Othello", nullptr);
     menu->add_item("Blocks", nullptr);

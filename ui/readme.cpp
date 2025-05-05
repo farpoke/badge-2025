@@ -69,6 +69,9 @@ namespace ui
             line_height        = measure.bottom - measure.top + 2;
         }
 
+        lines.emplace_back("         (Press (B) to exit)");
+        lines.emplace_back("");
+
         scroll = 0;
 
         int available_width = lcd::WIDTH - padding * 2;
