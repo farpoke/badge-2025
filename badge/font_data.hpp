@@ -31,6 +31,8 @@ namespace font::data
         std::span<const Glyph> glyphs;
 
         [[nodiscard]] constexpr const Glyph& get(char ch) const {
+            if (ch == '\n' || ch == '\r' || ch == '\t')
+                ch = ' ';
             if (ch < glyph_base || ch >= glyph_base + glyph_count)
                 return NUL_GLYPH;
             return glyphs[ch - glyph_base];

@@ -34,7 +34,7 @@ namespace ui
 
         if (items.empty()) return;
 
-        if (buttons::a()) {
+        if (buttons::a() || buttons::push()) {
             const auto& item = items[selected_item];
             if (item.target_state)
                 push_state(item.target_state);

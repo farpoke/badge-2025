@@ -10,6 +10,14 @@
 namespace font
 {
 
+    struct TextMeasure {
+        int left;
+        int right;
+        int top;
+        int bottom;
+        int advance;
+    };
+
     struct TextDraw {
         TextDraw() = default;
         TextDraw(const TextDraw&) = delete;
@@ -32,6 +40,7 @@ namespace font
         explicit constexpr Font(const data::Font& data) : data(data) {}
         ~Font() = default;
 
+        TextMeasure measure(std::string_view text) const;
         TextDraw render(std::string_view text) const;
 
     private:

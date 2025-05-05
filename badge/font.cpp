@@ -16,6 +16,28 @@ namespace font
     constexpr Font noto_sans(data::noto_sans);
     constexpr Font noto_sans_cm(data::noto_sans_cm);
 
+    TextMeasure Font::measure(std::string_view text) const {
+        TextMeasure result = {};
+        if (text.empty())
+            return result;
+
+        result.left = data.get(text[0]).offset_x;
+        result.right = result.left;
+        result.top = -data.ascent;
+        result.bottom = data.descent;
+
+        data::Glyph glyph;
+        for (const auto ch : text) {
+            glyph = data.get(ch);
+            result.advance += glyph.advance;
+            result.top = std::min<int>(result.top, glyph.offset_y);
+            result.bottom = std::max<int>(result.bottom, glyph.height + glyph.offset_y);
+        }
+        result.right = result.advance + glyph.width - glyph.offset_x;
+
+        return result;
+    }
+
     TextDraw Font::render(std::string_view text) const {
         if (text.empty())
             return {};

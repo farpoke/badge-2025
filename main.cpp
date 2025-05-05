@@ -12,12 +12,19 @@
 #include <badge/font.hpp>
 #include <core/core1.hpp>
 #include <ui/menu.hpp>
+#include <ui/readme.hpp>
 #include <ui/splash.hpp>
 #include <ui/ui.hpp>
 #include <usb/usb.hpp>
 
 class FontTest final : public ui::State {
 public:
+    void update(int delta_ms) override {
+        State::update(delta_ms);
+        if (buttons::b())
+            ui::pop_state();
+    }
+
     void draw() override {
         drawing::draw_image(0, 0, image::splash_bg);
         drawing::fill_rect(0, 0, lcd::WIDTH, lcd::HEIGHT, COLOR_BLACK, 150);
@@ -52,7 +59,8 @@ public:
     core1::reset_and_launch();
 
     const auto menu = ui::make_state<ui::MainMenu>();
-    menu->add_item("README", nullptr);
+    menu->add_item("Font Test", ui::make_state<FontTest>());
+    menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Code Entry", nullptr);
     menu->add_item("Snake", nullptr);
     menu->add_item("Flappy", nullptr);

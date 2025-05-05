@@ -1,26 +1,36 @@
 
                         HackGBGay Badge 2025
 
-                    🔗 https://hack.gbgay.com
+                       https://hack.gbgay.com
 
 This is the badge for the HackGBGay event of 2025.
 
-The microcontroller on the badge is a Raspberry Pi RP2040 chip, featuring two
-ARM Cortex-M0+ cores, 125 MHz system clock, 256 KiB of core RAM, and an
-additional 16 MiB of external FLASH memory.
+Flags are codes that can be found by solving the various available challenges.
+They always* start with the text "gbgay{" and end with "}". The text inbetween
+the curly braces is unique for each challenge. If you find one you can enter
+it by selecting "Code Entry" in the main menu, and using the little on-screen
+keyboard to enter in the text.
 
-Aside from this USB drive, the badge also presents a USB COM port with a Python
-REPL that can be used to interact with the badge.
+The microcontroller on the badge is a Raspberry Pi RP2040 chip, featuring two
+ARM Cortex-M0+ cores, a 125 MHz system clock, 256 KiB of core RAM, and 16 MiB
+of external FLASH memory.
+
+When plugged into a computer, the badge will present as a USB drive containing
+this file, and also as a USB COM port with debug text output.
 
 The firmware sources and assets for the badge, including this file and others,
 will be available on GitHub. Because the sources might include some of the
 flags, the repository is private until after the event.
 
-            🔗 https://github.com/farpoke/badge-2025
+               https://github.com/farpoke/badge-2025
 
 /Artemis
 
 
+
+* The exception to the rule is that there are two short codes hidden on the
+  badge PCB itself, which due to space constraints do not include the leading
+  "gbgay{" or trailing "}".
 
 
 

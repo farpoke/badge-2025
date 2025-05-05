@@ -19,7 +19,6 @@ namespace drawing
     void draw_pixel(int x, int y, Pixel color);
 
     void draw_line(int x0, int y0, int x1, int y1, Pixel color);
-    void draw_line_aa(int x0, int y0, int x1, int y1, Pixel color);
 
     void draw_rect(int left, int top, int width, int height, Pixel color);
 

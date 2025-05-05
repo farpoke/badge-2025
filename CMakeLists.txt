@@ -52,11 +52,13 @@ add_executable(${TARGET}
         badge/lcd.cpp
         core/core1.cpp
         core/irq.cpp
+        fs/fs.cpp
+        fs/msc.cpp
         ui/menu.cpp
+        ui/readme.cpp
         ui/splash.cpp
         ui/state.cpp
         ui/ui.cpp
-        usb/msc.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
