@@ -54,6 +54,7 @@ images:
   button_push: gfx/icons_14.png
 
   snek_fruit: gfx/icons_15.png
+
   nav_4way: gfx/icons_16.png
 
   flappy_pipe: gfx/icons_17.png
@@ -62,3 +63,15 @@ images:
   flappy_neutral: gfx/icons_20.png
   flappy_up: gfx/icons_21.png
   flappy_down: gfx/icons_22.png
+
+  gpio_in: gfx/icons_23.png
+  gpio_out: gfx/icons_24.png
+  gpio_ana: gfx/icons_25.png
+  gpio_nop: gfx/icons_26.png
+  gpio_pu: gfx/icons_27.png
+  gpio_pd: gfx/icons_28.png
+  gpio_hi: gfx/icons_29.png
+  gpio_lo: gfx/icons_30.png
+
+  "on": gfx/icons_31.png
+  "off": gfx/icons_32.png
