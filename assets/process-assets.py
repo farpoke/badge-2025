@@ -79,13 +79,33 @@ class AssetCollection:
         header_text = '\n'.join(header_lines)
         source_text = '\n'.join(source_lines)
 
+        header_data = header_text.encode()
+        source_data = source_text.encode()
+
+        save_header = True
+        save_source = True
+
         header_file = output_dir / 'assets.hpp'
-        header_file.write_text(header_text, 'utf-8')
-        print('Wrote', len(header_lines), 'lines to', header_file)
+        if header_file.exists():
+            existing_data = header_file.read_bytes()
+            if existing_data == header_data:
+                save_header = False
+                print('No changes to', header_file)
 
         source_file = output_dir / 'assets.cpp'
-        source_file.write_text(source_text, 'utf-8')
-        print('Wrote', len(source_lines), 'lines to', source_file)
+        if source_file.exists():
+            existing_data = source_file.read_bytes()
+            if existing_data == source_data:
+                save_source = False
+                print('No changes to', source_file)
+
+        if save_header:
+            header_file.write_bytes(header_data)
+            print('Wrote', len(header_data), 'bytes to', header_file)
+
+        if save_source:
+            source_file.write_bytes(source_data)
+            print('Wrote', len(source_lines), 'bytes to', source_file)
 
 
 def run():

@@ -15,5 +15,12 @@ constexpr Pixel rgb888(uint8_t r, uint8_t g, uint8_t b) { return rgb24(r << 16 |
 constexpr Pixel l8(uint8_t gray) { return rgb888(gray, gray, gray); }
 
 
-constexpr auto COLOR_BLACK = rgb888(0, 0, 0);
-constexpr auto COLOR_WHITE = rgb888(255, 255, 255);
+constexpr auto COLOR_BLACK   = rgb888(0, 0, 0);
+constexpr auto COLOR_RED     = rgb888(255, 0, 0);
+constexpr auto COLOR_ORANGE  = rgb888(255, 128, 0);
+constexpr auto COLOR_YELLOW  = rgb888(255, 255, 0);
+constexpr auto COLOR_GREEN   = rgb888(0, 255, 0);
+constexpr auto COLOR_CYAN    = rgb888(0, 255, 255);
+constexpr auto COLOR_BLUE    = rgb888(0, 0, 255);
+constexpr auto COLOR_MAGENTA = rgb888(255, 0, 255);
+constexpr auto COLOR_WHITE   = rgb888(255, 255, 255);

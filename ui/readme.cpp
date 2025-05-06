@@ -39,7 +39,14 @@ namespace ui
         int y = padding + line_height - scroll;
 
         for (const auto &line : lines) {
-            const auto render = font->render(line);
+            if (line.empty() || (y + line_height) < 0) {
+                y += line_height;
+                continue;
+            }
+            auto line_font = this->font;
+            if (line[0] == '#')
+                line_font = &font::m6x11;
+            const auto render = line_font->render(line);
             if ((y + render.dy) > lcd::HEIGHT)
                 break;
             if ((y + render.dy + render.height) >= 0)

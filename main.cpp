@@ -12,6 +12,7 @@
 #include <badge/drawing.hpp>
 #include <badge/font.hpp>
 #include <core/core1.hpp>
+#include <games/blocks.hpp>
 #include <games/flappy.hpp>
 #include <games/snek.hpp>
 #include <ui/code_entry.hpp>
@@ -69,7 +70,7 @@ public:
     menu->add_item("Snek", ui::make_state<snek::SnekGame>());
     // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
     menu->add_item("Othello", nullptr);
-    menu->add_item("Blocks", nullptr);
+    menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
     menu->add_item("GPIO Control", nullptr);
     menu->add_item("SAO Control", nullptr);
     // menu->add_item("Font Test", ui::make_state<FontTest>());
@@ -79,6 +80,8 @@ public:
 
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
+
+    // ui::push_new_state<blocks::BlocksGame>();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();

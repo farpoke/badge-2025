@@ -23,12 +23,13 @@ from .base import AssetBase
 # http://elm-chan.org/docs/fat_e.html
 
 
-BLOCK_COUNT = 340  # This is the largest amount where the FAT still fits in one sector.
+BLOCK_COUNT = 512
 IMAGE_SIZE = BLOCK_COUNT * 512
-FAT_SIZE = BLOCK_COUNT + BLOCK_COUNT // 2
-FAT_SIZE_SECTORS = (FAT_SIZE + 511) // 512
+FAT_SECTORS = 2
+FAT_DATA_ENTRIES = BLOCK_COUNT - 2 - FAT_SECTORS
+FAT_SIZE = 3 + FAT_DATA_ENTRIES + (FAT_DATA_ENTRIES + 1) // 2
 
-assert FAT_SIZE_SECTORS == 1, f'FAT takes up {FAT_SIZE_SECTORS} sectors, but we want it to remain in one'
+assert (FAT_SIZE + 511) // 512 == FAT_SECTORS
 
 VOLUME_ID = int(datetime.datetime.now(datetime.UTC).timestamp()) & 0xFFFFFFFF
 VOLUME_NAME = 'BADGE'
@@ -77,7 +78,7 @@ class BootSector:
             ('H', 16),  # Number of entries in the root directory (16 entries of 32 bytes = 512 byte sector).
             ('H', BLOCK_COUNT),  # Total number of sectors. Max 2**16-1 for FAT12/16 volume.
             ('B', self.media_type),
-            ('H', FAT_SIZE_SECTORS),  # FAT size in sectors.
+            ('H', FAT_SECTORS),  # FAT size in sectors.
             ('H', 1),  # Sectors per track. Not relevant.
             ('H', 1),  # Number of heads. Not relevant.
             ('I', 0),  # Number of "hidden" physical sectors between this boot sector and the FAT volume.
@@ -241,17 +242,17 @@ class Filesystem:
         self.boot_sector = BootSector()
 
         self.table = [
-                         # First two entries are special.
-                         0xF00 | self.boot_sector.media_type,
-                         END_OF_CHAIN,
-                         # Remaining clusters are unused for now.
-                     ] + [0] * (BLOCK_COUNT - 2)
+            # First two entries are special.
+            0xF00 | self.boot_sector.media_type,
+            END_OF_CHAIN,
+            # Remaining clusters are unused for now.
+        ] + [0] * FAT_DATA_ENTRIES
 
         self.root_entries = [
             DirectoryEntry(long_name=self.boot_sector.volume_name, flags=DirEntryFlags.VOLUME_ID),
         ]
 
-        self.data = [None] * (BLOCK_COUNT - 3)
+        self.data = [None] * FAT_DATA_ENTRIES
 
     def _claim_clusters(self, n_clusters) -> list[int]:
         assert n_clusters >= 0
@@ -313,7 +314,7 @@ class Filesystem:
         image_bytes = self.boot_sector.to_bytes()
 
         fat = self._encode_fat12()
-        fat = fat.ljust(512, b'\0')
+        fat = fat.ljust(512 * FAT_SECTORS, b'\0')
         image_bytes += fat
 
         assert len(self.root_entries) <= 16, f'Too many root entries, {len(self.root_entries)} > 16'
