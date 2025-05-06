@@ -54,6 +54,7 @@ add_executable(${TARGET}
         core/irq.cpp
         fs/fs.cpp
         fs/msc.cpp
+        games/flappy.cpp
         games/snek.cpp
         ui/code_entry.cpp
         ui/menu.cpp

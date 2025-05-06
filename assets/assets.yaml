@@ -1,4 +1,3 @@
-
 files:
   - path: files/README.txt
   - path: files/hidden.txt
@@ -37,19 +36,29 @@ images:
     alpha: false
 
   triangle_right: gfx/icons_00.png
-  triangle_left:  gfx/icons_01.png
-  flag:           gfx/icons_02.png
-  green_check:    gfx/icons_03.png
-  red_x:          gfx/icons_04.png
-  del_symbol:     gfx/icons_05.png
-  button_a:       gfx/icons_06.png
-  button_b:       gfx/icons_07.png
-  button_c:       gfx/icons_08.png
-  button_d:       gfx/icons_09.png
-  button_up:      gfx/icons_10.png
-  button_right:   gfx/icons_11.png
-  button_down:    gfx/icons_12.png
-  button_left:    gfx/icons_13.png
-  button_push:    gfx/icons_14.png
-  snek_fruit:     gfx/icons_15.png
-  nav_4way:       gfx/icons_16.png
+  triangle_left: gfx/icons_01.png
+  flag: gfx/icons_02.png
+  green_check: gfx/icons_03.png
+  red_x: gfx/icons_04.png
+  del_symbol: gfx/icons_05.png
+
+  button_a: gfx/icons_06.png
+  button_b: gfx/icons_07.png
+  button_c: gfx/icons_08.png
+  button_d: gfx/icons_09.png
+
+  button_up: gfx/icons_10.png
+  button_right: gfx/icons_11.png
+  button_down: gfx/icons_12.png
+  button_left: gfx/icons_13.png
+  button_push: gfx/icons_14.png
+
+  snek_fruit: gfx/icons_15.png
+  nav_4way: gfx/icons_16.png
+
+  flappy_pipe: gfx/icons_17.png
+  flappy_pipe_top: gfx/icons_18.png
+  flappy_pipe_bot: gfx/icons_19.png
+  flappy_neutral: gfx/icons_20.png
+  flappy_up: gfx/icons_21.png
+  flappy_down: gfx/icons_22.png
