@@ -3,7 +3,7 @@ add_library(doom STATIC
         am_map.c
         d_items.c
         d_main.c
-        # d_net.c
+        d_net.c
         doomdef.c
         doomstat.c
         dstrings.c
@@ -12,7 +12,7 @@ add_library(doom STATIC
         g_game.c
         hu_lib.c
         hu_stuff.c
-        i_main.c
+        # i_main.c
         # i_net.c
         # i_sound.c
         i_system.c
@@ -62,8 +62,17 @@ add_library(doom STATIC
         w_wad.c
         wi_stuff.c
         z_zone.c
+
+        rp2040/graphics.c
+        rp2040/launch_doom.c
+        rp2040/network.c
+        rp2040/no_sound.c
 )
 
-target_include_directories(doom PRIVATE "${CMAKE_CURRENT_LIST_DIR}")
+target_include_directories(doom PRIVATE "${CMAKE_CURRENT_LIST_DIR}/rp2040")
 
-target_compile_definitions(doom PRIVATE LINUX NORMALUNIX)
+target_link_libraries(doom PUBLIC
+        pico_time
+)
+
+target_compile_options(doom PRIVATE -Os -g)

@@ -32,6 +32,8 @@ rcsid[] = "$Id: m_bbox.c,v 1.1 1997/02/03 22:45:10 b1 Exp $";
 #include <sys/time.h>
 #include <unistd.h>
 
+#include <pico/time.h>
+
 #include "doomdef.h"
 #include "m_misc.h"
 #include "i_video.h"
@@ -125,15 +127,7 @@ void I_Quit (void)
 
 void I_WaitVBL(int count)
 {
-#ifdef SGI
-    sginap(1);                                           
-#else
-#ifdef SUN
-    sleep(0);
-#else
-    usleep (count * (1000000/70) );                                
-#endif
-#endif
+    sleep_us(count * (1000000/70) );
 }
 
 void I_BeginRead(void)

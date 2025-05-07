@@ -24,6 +24,9 @@
 #include <usb/usb.hpp>
 
 
+extern "C" void launch_doom(void);
+
+
 class FontTest final : public ui::State {
 public:
     void update(int delta_ms) override {
@@ -80,6 +83,8 @@ public:
     ui::push_new_state<ui::SplashScreen>();
 
     ui::push_new_state<othello::OthelloGame>();
+
+    launch_doom();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();
