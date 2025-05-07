@@ -1,6 +1,6 @@
 files:
   - path: files/README.txt
-  - path: files/hidden.txt
+  - path: files/.hidden.txt
     hidden: true
   - path: badge-pdfs.tar.gz
     archive:
