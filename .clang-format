@@ -63,3 +63,6 @@ BinPackArguments: false
 AllowAllParametersOfDeclarationOnNextLine: false
 PenaltyReturnTypeOnItsOwnLine: 1000
 PenaltyBreakBeforeFirstCallParameter: 1000
+
+AllowShortCaseExpressionOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true

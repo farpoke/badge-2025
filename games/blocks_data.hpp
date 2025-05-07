@@ -216,6 +216,11 @@ namespace blocks
         std::array<kick_tests_t, 4> ccw_kicks;
     };
 
+    /**
+     * Wall/super kick data table for the I piece.
+     *
+     * See https://tetris.fandom.com/wiki/SRS
+     */
     constexpr kick_data_t I_KICK_DATA = {
             {
                     // CW kicks

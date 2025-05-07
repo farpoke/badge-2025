@@ -14,6 +14,7 @@
 #include <core/core1.hpp>
 #include <games/blocks.hpp>
 #include <games/flappy.hpp>
+#include <games/othello.hpp>
 #include <games/snek.hpp>
 #include <ui/code_entry.hpp>
 #include <ui/menu.hpp>
@@ -21,6 +22,7 @@
 #include <ui/splash.hpp>
 #include <ui/ui.hpp>
 #include <usb/usb.hpp>
+
 
 class FontTest final : public ui::State {
 public:
@@ -49,12 +51,10 @@ public:
         do_render(font::m6x11, "\"m6x11\" Hello world!");
         do_render(font::noto_sans, "\"Noto Sans\" Hello world!");
         do_render(font::noto_sans_cm, "\"Noto Sans Condensed Medium\" Hello world!");
-
     }
 };
 
-[[noreturn]] int main()
-{
+[[noreturn]] int main() {
     stdio_init_all();
     printf("\n===== lcd-test =====\n");
 
@@ -67,25 +67,23 @@ public:
     menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
     menu->add_item("Found Flags", nullptr);
-    menu->add_item("Snek", ui::make_state<snek::SnekGame>());
-    // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
-    menu->add_item("Othello", nullptr);
     menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
+    menu->add_item("Snek", ui::make_state<snek::SnekGame>());
+    menu->add_item("Othello", ui::make_state<othello::OthelloGame>());
+    // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
     menu->add_item("GPIO Control", nullptr);
     menu->add_item("SAO Control", nullptr);
     // menu->add_item("Font Test", ui::make_state<FontTest>());
-    menu->add_item("Bootloader", []{
-        rom_reset_usb_boot_extra(-1, 0, false);
-    });
+    menu->add_item("Bootloader", [] { rom_reset_usb_boot_extra(-1, 0, false); });
 
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
-    ui::push_new_state<blocks::BlocksGame>();
+    ui::push_new_state<othello::OthelloGame>();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();
-    while(true) {
+    while (true) {
 
         while (tud_task_event_ready())
             tud_task();
@@ -93,7 +91,8 @@ public:
         const auto now = get_absolute_time();
         const auto delta_time_ms = absolute_time_diff_us(last_frame_time, now) / 1000;
 
-        if (delta_time_ms < 10) continue;
+        if (delta_time_ms < 10)
+            continue;
 
         last_frame_time = now;
 

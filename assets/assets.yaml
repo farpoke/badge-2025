@@ -76,6 +76,12 @@ images:
   "on": gfx/icons_31.png
   "off": gfx/icons_32.png
 
+  othello_white: gfx/icons_33.png
+  othello_black: gfx/icons_34.png
+  othello_flip2: gfx/icons_35.png
+  othello_flip1: gfx/icons_36.png
+  othello_flip3: gfx/icons_37.png
+
   blocks_tiles:
     image: gfx/blocks-tiles.png
     alpha: false

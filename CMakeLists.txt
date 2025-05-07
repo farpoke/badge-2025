@@ -56,6 +56,7 @@ add_executable(${TARGET}
         fs/msc.cpp
         games/blocks.cpp
         games/flappy.cpp
+        games/othello.cpp
         games/snek.cpp
         ui/code_entry.cpp
         ui/menu.cpp
@@ -145,6 +146,9 @@ target_link_libraries(${TARGET}
 # Include our assets and add them to our target.
 add_subdirectory(assets)
 target_link_libraries(${TARGET} assets)
+
+# Add in our DOOM fork.
+add_subdirectory(doom)
 
 # Ask the pico SDK to generate extra outputs for our target.
 pico_add_extra_outputs(${TARGET})

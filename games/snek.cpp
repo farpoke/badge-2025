@@ -79,6 +79,10 @@ namespace snek
                 ui::pop_state();
             }
         }
+        else if (game_state == GameState::WAITING_TO_START) {
+            if (buttons::b())
+                ui::pop_state();
+        }
         if (buttons::up_current())
             steer(CellState::UP);
         if (buttons::down_current())
