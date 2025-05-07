@@ -27,16 +27,16 @@ namespace drawing
         // Use interpolator 0 in blend mode to interpolate between source and destination color.
         interp0->accum[1] = alpha;
         // Interpolate the red channel (upper 5 bits of 16-bit pixel):
-        interp0->base[0]  = dst & 0xF800;
-        interp0->base[1]  = src & 0xF800;
-        Pixel result      = interp0->peek[1] & 0xF800;
+        interp0->base[0] = dst & 0xF800;
+        interp0->base[1] = src & 0xF800;
+        Pixel result = interp0->peek[1] & 0xF800;
         // Interpolate the green channel (middle 6 bits of 16-bit pixel):
-        interp0->base[0]  = dst & 0x07E0;
-        interp0->base[1]  = src & 0x07E0;
+        interp0->base[0] = dst & 0x07E0;
+        interp0->base[1] = src & 0x07E0;
         result |= interp0->peek[1] & 0x07E0;
         // Interpolate the blue channel (lower 5 bits of 16-bit pixel):
-        interp0->base[0]  = dst & 0x001F;
-        interp0->base[1]  = src & 0x001F;
+        interp0->base[0] = dst & 0x001F;
+        interp0->base[1] = src & 0x001F;
         result |= interp0->peek[1] & 0x001F;
         //
         return result;
@@ -51,19 +51,19 @@ namespace drawing
     void draw_pixel(int x, int y, Pixel color) {
         if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
             return;
-        auto *ptr          = lcd::get_offscreen_ptr_unsafe();
+        auto *ptr = lcd::get_offscreen_ptr_unsafe();
         ptr[y * WIDTH + x] = color;
     }
 
     void draw_line(int x0, int y0, int x1, int y1, Pixel color) {
         // See http://members.chello.at/~easyfilter/bresenham.html
-        const int dx  = abs(x1 - x0);
-        const int sx  = x0 < x1 ? 1 : -1;
-        const int dy  = -abs(y1 - y0);
-        const int sy  = y0 < y1 ? 1 : -1;
-        int       err = dx + dy;
-        int       x   = x0;
-        int       y   = y0;
+        const int dx = abs(x1 - x0);
+        const int sx = x0 < x1 ? 1 : -1;
+        const int dy = -abs(y1 - y0);
+        const int sy = y0 < y1 ? 1 : -1;
+        int err = dx + dy;
+        int x = x0;
+        int y = y0;
         while (true) {
             draw_pixel(x, y, color);
             if (x == x1 && y == y1)
@@ -156,8 +156,8 @@ namespace drawing
         }
     }
 
-    void fill_rect(int left, int top, int width, int height, Pixel color, const uint8_t* alpha) {
-        const int  stride = width;
+    void fill_rect(int left, int top, int width, int height, Pixel color, const uint8_t *alpha) {
+        const int stride = width;
         if (alpha == nullptr)
             return;
         const auto offset = validate_rect(left, top, width, height, stride);
@@ -167,56 +167,61 @@ namespace drawing
         init_blend_alpha();
         for (int y = 0; y < height; y++) {
             const auto *src_ptr = &alpha[y * stride + offset];
-            auto       *dst_ptr = &frame_ptr[(y + top) * WIDTH + left];
+            auto *dst_ptr = &frame_ptr[(y + top) * WIDTH + left];
             for (int x = 0; x < width; x++) {
                 dst_ptr[x] = blend_alpha(dst_ptr[x], color, src_ptr[x]);
             }
         }
     }
 
-    void copy(int left, int top, int width, int height, const Pixel *pixels) {
-        const int  stride = width;
+    void copy(int left, int top, int width, int height, int stride, const Pixel *pixels) {
         const auto offset = validate_rect(left, top, width, height, stride);
         if (offset < 0)
             return;
         auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
         for (int y = 0; y < height; y++) {
             const auto *src_ptr = &pixels[y * stride + offset];
-            auto       *dst_ptr = &frame_ptr[(top + y) * WIDTH];
+            auto *dst_ptr = &frame_ptr[(top + y) * WIDTH];
             for (int x = 0; x < width; x++) {
                 dst_ptr[left + x] = src_ptr[x];
             }
         }
     }
 
-    void copy_alpha(int left, int top, int width, int height, const Pixel *pixels, const uint8_t *alpha) {
-        const int  stride = width;
+    void copy_alpha(int left, int top, int width, int height, int stride, const Pixel *pixels, const uint8_t *alpha) {
         const auto offset = validate_rect(left, top, width, height, stride);
         if (offset < 0)
             return;
         auto *frame_ptr = lcd::get_offscreen_ptr_unsafe();
         init_blend_alpha();
         for (int y = 0; y < height; y++) {
-            const auto *src_ptr  = &pixels[y * stride + offset];
+            const auto *src_ptr = &pixels[y * stride + offset];
             const auto *alpha_ptr = &alpha[y * stride + offset];
-            auto       *dst_ptr  = &frame_ptr[(top + y) * WIDTH];
+            auto *dst_ptr = &frame_ptr[(top + y) * WIDTH];
             for (int x = 0; x < width; x++) {
                 dst_ptr[left + x] = blend_alpha(dst_ptr[left + x], src_ptr[x], alpha_ptr[x]);
             }
         }
     }
 
-    void draw_image(int left, int top, const Image &image) {
+    void draw_image(int dst_left, int dst_top, int src_left, int src_top, int width, int height, const Image &image) {
+        const int stride = image.width;
+        const int offset = src_left + src_top * stride;
         if (image.alpha_data == nullptr)
-            copy(left, top, image.width, image.height, image.color_data);
+            copy(dst_left, dst_top, width, height, stride, image.color_data + offset);
         else
-            copy_alpha(left, top, image.width, image.height, image.color_data, image.alpha_data);
+            copy_alpha(dst_left, dst_top, width, height, stride, image.color_data + offset, image.alpha_data + offset);
     }
+
 
     void draw_text(int x, int y, Pixel bg, uint8_t bg_alpha, Pixel fg, const TextDraw &render) {
         fill_rect(x + render.dx, y + render.dy, render.width, render.height, bg, bg_alpha);
         fill_rect(x + render.dx, y + render.dy, render.width, render.height, fg, render.alpha.get());
     }
 
+    void draw_text_centered(int x, int y, std::string_view text, Pixel fg, const font::Font &font) {
+        const auto render = font.render(text);
+        fill_rect(x - render.width / 2, y + render.dy, render.width, render.height, fg, render.alpha.get());
+    }
 
 } // namespace drawing

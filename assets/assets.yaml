@@ -75,3 +75,7 @@ images:
 
   "on": gfx/icons_31.png
   "off": gfx/icons_32.png
+
+  blocks_tiles:
+    image: gfx/blocks-tiles.png
+    alpha: false

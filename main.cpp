@@ -81,7 +81,7 @@ public:
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
-    // ui::push_new_state<blocks::BlocksGame>();
+    ui::push_new_state<blocks::BlocksGame>();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();
