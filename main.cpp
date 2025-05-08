@@ -18,6 +18,7 @@
 #include <games/snek.hpp>
 #include <ui/code_entry.hpp>
 #include <ui/menu.hpp>
+#include <ui/qr_code.hpp>
 #include <ui/readme.hpp>
 #include <ui/splash.hpp>
 #include <ui/ui.hpp>
@@ -25,6 +26,39 @@
 
 
 extern "C" void launch_doom(void);
+
+
+class Website final : public ui::State {
+public:
+    ui::qr::QrCode code;
+
+    Website() {
+        code.version = ui::qr::Version::V2_25x25;
+        code.ec = ui::qr::ErrorCorrection::MEDIUM;
+        code.content = "https://hack.gbgay.com/";
+    }
+
+    void update(int delta_ms) override {
+        State::update(delta_ms);
+        if (buttons::b())
+            ui::pop_state();
+    }
+
+    void draw() override {
+        drawing::clear(COLOR_WHITE);
+
+        code.draw((lcd::WIDTH - code.get_image_size()) / 2, (lcd::HEIGHT - code.get_image_size()) / 2);
+    }
+
+    void pause() override {
+        code.reset();
+    }
+
+    void resume() override {
+        code.generate();
+        code.render(4);
+    }
+};
 
 
 class FontTest final : public ui::State {
@@ -68,6 +102,7 @@ public:
 
     const auto menu = ui::make_state<ui::MainMenu>();
     menu->add_item("README", ui::make_state<ui::Readme>());
+    menu->add_item("Website", ui::make_state<Website>());
     menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
     menu->add_item("Found Flags", nullptr);
     menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
@@ -82,9 +117,10 @@ public:
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
-    ui::push_new_state<othello::OthelloGame>();
+    // ui::push_new_state<othello::OthelloGame>();
+    // ui::push_new_state<ui::Readme>();
 
-    launch_doom();
+    // launch_doom();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();

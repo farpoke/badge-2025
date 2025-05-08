@@ -60,6 +60,7 @@ add_executable(${TARGET}
         games/snek.cpp
         ui/code_entry.cpp
         ui/menu.cpp
+        ui/qr_code.cpp
         ui/readme.cpp
         ui/splash.cpp
         ui/state.cpp
