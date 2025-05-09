@@ -26,8 +26,8 @@ namespace drawing
     void fill_rect(int left, int top, int width, int height, Pixel color, uint8_t alpha);
     void fill_rect(int left, int top, int width, int height, Pixel color, const uint8_t *alpha);
 
-    void draw_circle(int x, int y, int radius, Pixel color);
-    void fill_circle(int x, int y, int radius, Pixel color);
+    void draw_ellipse(int left, int top, int width, int height, Pixel color);
+    void fill_ellipse(int left, int top, int width, int height, Pixel color);
 
     void copy(int left, int top, int width, int height, int stride, const Pixel *pixels);
     void copy_alpha(int left, int top, int width, int height, int stride, const Pixel *pixels, const uint8_t *alpha);

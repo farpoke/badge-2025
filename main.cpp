@@ -28,6 +28,9 @@
 extern "C" void launch_doom(void);
 
 
+void enable_stdio_to_usb();
+
+
 class Website final : public ui::State {
 public:
     ui::qr::QrCode code;
@@ -117,8 +120,15 @@ public:
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
-    // ui::push_new_state<othello::OthelloGame>();
-    // ui::push_new_state<ui::Readme>();
+    ui::push_new_state<othello::OthelloGame>();
+
+    /*
+    enable_stdio_to_usb();
+    auto start = get_absolute_time();
+    while (absolute_time_diff_us(start, get_absolute_time()) < 5'000'000) {
+        tud_task();
+    }
+    */
 
     // launch_doom();
 

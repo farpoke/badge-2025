@@ -174,6 +174,14 @@ namespace drawing
         }
     }
 
+    void draw_ellipse(int left, int top, int width, int height, Pixel color) {
+        draw_rect(left, top, width, height, color);
+    }
+
+    void fill_ellipse(int left, int top, int width, int height, Pixel color) {
+        fill_rect(left, top, width, height, color);
+    }
+
     void copy(int left, int top, int width, int height, int stride, const Pixel *pixels) {
         const auto offset = validate_rect(left, top, width, height, stride);
         if (offset < 0)

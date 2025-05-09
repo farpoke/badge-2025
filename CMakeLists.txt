@@ -65,6 +65,7 @@ add_executable(${TARGET}
         ui/splash.cpp
         ui/state.cpp
         ui/ui.cpp
+        usb/stdio_driver.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
 )
