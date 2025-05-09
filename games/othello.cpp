@@ -41,12 +41,15 @@ namespace othello
     }
 
     TileState get_next_state(TileState tile) {
-        if (tile > TS_EMPTY && tile < TS_WRAP_STATE - 1)
-            return static_cast<TileState>(tile + 1);
-        else if (tile == TS_WRAP_STATE - 1)
-            return static_cast<TileState>(TS_EMPTY + 1);
-        else
-            return tile;
+        switch (tile) {
+        case TS_FLIP_B2W_1:
+        case TS_FLIP_B2W_2:
+        case TS_FLIP_B2W_3:
+        case TS_FLIP_W2B_1:
+        case TS_FLIP_W2B_2: return static_cast<TileState>(tile + 1);
+        case TS_FLIP_W2B_3: return TS_BLACK;
+        default: return tile;
+        }
     }
 
     BoardState BoardState::initial_state() {
@@ -210,7 +213,7 @@ namespace othello
                     drawing::draw_image(BOARD_LEFT + col * TILE_SIZE + PIECE_OFFSET,
                                         BOARD_TOP + row * TILE_SIZE + PIECE_OFFSET,
                                         *image);
-                if (board.move_flips[row][col] > 0)
+                if (state == GS_WAITING_ON_PLAYER && board.move_flips[row][col] > 0)
                     drawing::draw_ellipse(BOARD_LEFT + col * TILE_SIZE + PIECE_OFFSET,
                                           BOARD_TOP + row * TILE_SIZE + PIECE_OFFSET,
                                           TILE_SIZE - PIECE_OFFSET * 2 - 1,
@@ -221,8 +224,8 @@ namespace othello
 
         // Draw the cursor.
         const auto &cursor_image = animation_counter == 0 ? image::cursor_anim1 : image::cursor_anim2;
-        drawing::draw_image(BOARD_LEFT + cursor_row * TILE_SIZE + PIECE_OFFSET,
-                            BOARD_TOP + cursor_col * TILE_SIZE + PIECE_OFFSET,
+        drawing::draw_image(BOARD_LEFT + cursor_col * TILE_SIZE + PIECE_OFFSET,
+                            BOARD_TOP + cursor_row * TILE_SIZE + PIECE_OFFSET,
                             cursor_image);
     }
 
@@ -258,6 +261,7 @@ namespace othello
         if (animation_counter >= 4) {
             state = GS_WAITING_ON_PLAYER;
             animation_counter = 0;
+            board.update_move_flips();
         }
     }
 

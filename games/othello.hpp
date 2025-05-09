@@ -20,8 +20,6 @@ namespace othello
         TS_FLIP_W2B_1,
         TS_FLIP_W2B_2,
         TS_FLIP_W2B_3,
-
-        TS_WRAP_STATE,
     };
 
     enum GameState {
