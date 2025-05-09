@@ -71,6 +71,7 @@ add_executable(${TARGET}
 )
 target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/usb
 )
 
 target_compile_definitions(${TARGET} PUBLIC

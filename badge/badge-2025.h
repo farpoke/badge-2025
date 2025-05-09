@@ -22,18 +22,21 @@
 // LCD backlight controlled via a PMOS transistor and PWM.
 #define LCD_LED_PIN 7
 
+// Power indicator LEDs can be disabled by the MCU via this pin.
+#define PWR_LED_PIN 15
+
+// Input pin to let the MCU sense the presence of a USB VBUS voltage.
+#define VBUS_SENSE_PIN 25
+
 // Left button/stick pins:
-#define BTN_NAV_COMMON 17
-#define BTN_UP         19
-#define BTN_DOWN       18
-#define BTN_LEFT       22
-#define BTN_RIGHT      16
-#define BTN_PUSH       26
+#define BTN_UP    23
+#define BTN_DOWN  22
+#define BTN_LEFT  19
+#define BTN_RIGHT 24
+#define BTN_PUSH  18
 
 // Right button/stick pins:
-#define BTN_ACTION_COMMON 5
-#define BTN_D             0
-#define BTN_A             3
-#define BTN_C             1
-#define BTN_B             4
-#define BTN_ACTION_PUSH   2
+#define BTN_A 6
+#define BTN_B 5
+#define BTN_C 16
+#define BTN_D 17

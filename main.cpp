@@ -31,6 +31,13 @@ extern "C" void launch_doom(void);
 void enable_stdio_to_usb();
 
 
+void disable_pwr_leds() {
+    gpio_set_function(PWR_LED_PIN, GPIO_FUNC_SIO);
+    gpio_set_dir(PWR_LED_PIN, true);
+    gpio_put(PWR_LED_PIN, false);
+}
+
+
 class Website final : public ui::State {
 public:
     ui::qr::QrCode code;
@@ -103,6 +110,8 @@ public:
 
     core1::reset_and_launch();
 
+    disable_pwr_leds();
+
     const auto menu = ui::make_state<ui::MainMenu>();
     menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Website", ui::make_state<Website>());
@@ -119,8 +128,6 @@ public:
 
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
-
-    ui::push_new_state<othello::OthelloGame>();
 
     /*
     enable_stdio_to_usb();

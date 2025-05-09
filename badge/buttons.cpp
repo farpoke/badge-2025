@@ -13,17 +13,10 @@ namespace buttons
         | (1 << BTN_A)
         | (1 << BTN_B)
         | (1 << BTN_C)
-        | (1 << BTN_D)
-        | (1 << BTN_ACTION_PUSH);
+        | (1 << BTN_D);
 
     uint32_t current_state = 0;
     uint32_t previous_state = 0;
-
-    void init_common(int pin) {
-        gpio_set_function(pin, GPIO_FUNC_SIO);
-        gpio_set_dir(pin, true);
-        gpio_put(pin, 0);
-    }
 
     void init_input(int pin) {
         gpio_set_function(pin, GPIO_FUNC_SIO);
@@ -33,8 +26,6 @@ namespace buttons
     }
 
     void init() {
-        init_common(BTN_NAV_COMMON);
-        init_common(BTN_ACTION_COMMON);
         for (int i = 0; i < 32; i++)
             if (MASK & (1 << i))
                 init_input(i);
