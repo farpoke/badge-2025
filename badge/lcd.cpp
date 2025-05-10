@@ -20,11 +20,16 @@
 
 namespace lcd::internal
 {
+
     int txDmaChannel = -1;
     dma_channel_config txDmaConfig = {};
 
     Pixel *_onScreenFrame = nullptr;
     Pixel *_offScreenFrame = nullptr;
+
+    static uint8_t _frameBufferBlob[FRAME_SIZE * 2];
+
+    bool _inDoomMode = false;
 
     void wait_for_spi() {
         while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
@@ -175,14 +180,14 @@ namespace lcd::internal
         gpio_set_dir_out_masked(sio_mask);
         gpio_put_masked(sio_mask, sio_mask);
 
-        backlight_off();
-
         txDmaChannel = dma_claim_unused_channel(true);
         txDmaConfig = dma_channel_get_default_config(txDmaChannel);
         channel_config_set_transfer_data_size(&txDmaConfig, DMA_SIZE_16);
         channel_config_set_dreq(&txDmaConfig, spi_get_dreq(LCD_SPI_PORT, true));
 
         printf("OK\n");
+
+        backlight_off();
 
         reset();
     }
@@ -213,10 +218,10 @@ namespace lcd::internal
         simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
 
         if (_onScreenFrame == nullptr)
-            _onScreenFrame = new Pixel[WIDTH * HEIGHT];
+            _onScreenFrame = reinterpret_cast<Pixel*>(_frameBufferBlob);
 
         if (_offScreenFrame == nullptr)
-            _offScreenFrame = new Pixel[WIDTH * HEIGHT];
+            _offScreenFrame = reinterpret_cast<Pixel*>(_frameBufferBlob + FRAME_SIZE);
 
         memset(_onScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
         memset(_offScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
@@ -364,4 +369,12 @@ namespace lcd {
         return _offScreenFrame;
     }
 
+}
+
+extern "C" uint8_t* lcd_change_to_doom_mode() {
+    // The DOOM engine wants a bunch of memory for screen buffers. So to let it have that we change how we render
+    // to the LCD (DOOM uses an 8-bit palette instead of 16-bit color buffer) and let the DOOM engine have our
+    // frame buffer blob.
+    lcd::internal::_inDoomMode = true;
+    return lcd::internal::_frameBufferBlob;
 }

@@ -515,7 +515,7 @@ W_CacheLumpName
 // W_Profile
 //
 // int		info[2500][10];
-int		info[500][10];
+int		info[50][10];
 int		profilecount;
 
 void W_Profile (void)

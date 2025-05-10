@@ -11,6 +11,7 @@ namespace ui
 {
 
     void MainMenu::add_item(std::string_view label, const StatePtr &target_state) {
+        printf("? Add menu item %s\n", label.data());
         items.emplace_back(label, target_state);
     }
 

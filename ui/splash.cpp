@@ -10,6 +10,7 @@ namespace ui
 {
 
     SplashScreen::SplashScreen() {
+        printf("? Allocate splash screen mask\n");
         mask = new uint8_t[lcd::WIDTH * lcd::HEIGHT];
         memset(mask, 0, lcd::WIDTH * lcd::HEIGHT);
 
@@ -18,6 +19,7 @@ namespace ui
     }
 
     SplashScreen::~SplashScreen() {
+        printf("? Free splash screen mask\n");
         delete[] mask;
     }
 

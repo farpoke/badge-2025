@@ -103,7 +103,7 @@ public:
 
 [[noreturn]] int main() {
     stdio_init_all();
-    printf("\n===== lcd-test =====\n");
+    printf("\n===== HackGBGay 2025 =====\n");
 
     usb::init();
     buttons::init();
@@ -127,7 +127,7 @@ public:
     menu->add_item("Bootloader", [] { rom_reset_usb_boot_extra(-1, 0, false); });
 
     ui::push_state(menu);
-    ui::push_new_state<ui::SplashScreen>();
+    // ui::push_new_state<ui::SplashScreen>();
 
     /*
     enable_stdio_to_usb();
@@ -136,6 +136,8 @@ public:
         tud_task();
     }
     */
+
+    stdio_flush();
 
     launch_doom();
 

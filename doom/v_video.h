@@ -41,14 +41,14 @@
 
 // Screen 0 is the screen updated by I_Update screen.
 // Screen 1 is an extra buffer.
-
-
-
-extern	byte*		screens[5];
+// Screen 2 is unused?
+// Screen 3 is named the background screen (BG) in st_lib.h (changed from the original 4).
+#define SCREENCOUNT 4
+extern	byte*	screens[SCREENCOUNT];
 
 extern  int	dirtybox[4];
 
-extern	byte	gammatable[5][256];
+extern	const byte	gammatable[5][256];
 extern	int	usegamma;
 
 

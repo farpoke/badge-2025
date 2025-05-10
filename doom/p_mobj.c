@@ -55,7 +55,7 @@ P_SetMobjState
 ( mobj_t*	mobj,
   statenum_t	state )
 {
-    state_t*	st;
+    const state_t*	st;
 
     do
     {
@@ -484,8 +484,8 @@ P_SpawnMobj
   mobjtype_t	type )
 {
     mobj_t*	mobj;
-    state_t*	st;
-    mobjinfo_t*	info;
+    const state_t*	st;
+    const mobjinfo_t*	info;
 	
     mobj = Z_Malloc (sizeof(*mobj), PU_LEVEL, NULL);
     memset (mobj, 0, sizeof (*mobj));

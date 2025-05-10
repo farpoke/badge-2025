@@ -678,6 +678,13 @@ class CombinedParser(ParserBase):
         if used_space > root.size:
             root.insert(['(padding)'], used_space - root.size)
 
+        region_size = region_end - region_start
+        free_space = region_size - root.size
+        if free_space > 0:
+            print(f'{pretty_size(free_space)} of free space')
+        elif free_space < 0:
+            print(f'{pretty_size(-free_space)} of space missing')
+
         root.name = f'* ({root.size} bytes)'
         root.apply_min_size(min_size)
         root.print(

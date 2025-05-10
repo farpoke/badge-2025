@@ -9,6 +9,8 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(Python3 REQUIRED)
+
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
 
@@ -79,6 +81,8 @@ target_compile_definitions(${TARGET} PUBLIC
         # We will allocate some memory for the core1 stack elsewhere.
         PICO_STACK_SIZE=0x2000
         PICO_CORE1_STACK_SIZE=0
+        # Enable/disable debug print in malloc.
+        PICO_DEBUG_MALLOC=1
 )
 
 target_compile_options(${TARGET} PRIVATE
@@ -170,4 +174,14 @@ add_custom_command(
             $<TARGET_FILE:${TARGET}>
             > ${output_path}$<IF:$<BOOL:$<TARGET_PROPERTY:${TARGET},OUTPUT_NAME>>,$<TARGET_PROPERTY:${TARGET},OUTPUT_NAME>,$<TARGET_PROPERTY:${TARGET},NAME>>.txt
         VERBATIM
+)
+
+# Add post-build command to run the analyze-map script.
+add_custom_target(analyze-map
+        COMMAND
+            ${CMAKE_COMMAND} -E env PYTHONIOENCODING=utf8
+            -- ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/tools/analyze-map.py $<TARGET_FILE:${TARGET}>.map
+        DEPENDS ${TARGET}
+        VERBATIM
+        COMMENT "Run analyze-map script..."
 )

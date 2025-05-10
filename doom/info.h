@@ -1155,7 +1155,7 @@ typedef struct
   long			misc1, misc2;
 } state_t;
 
-extern state_t	states[NUMSTATES];
+extern const state_t	states[NUMSTATES];
 extern const char *sprnames[NUMSPRITES];
 
 
@@ -1330,7 +1330,7 @@ typedef struct
 
 } mobjinfo_t;
 
-extern mobjinfo_t mobjinfo[NUMMOBJTYPES];
+extern const mobjinfo_t mobjinfo[NUMMOBJTYPES];
 
 #endif
 //-----------------------------------------------------------------------------

@@ -1421,7 +1421,8 @@ G_InitNew
 	respawnmonsters = true;
     else
 	respawnmonsters = false;
-		
+
+#if 0
     if (fastparm || (skill == sk_nightmare && gameskill != sk_nightmare) )
     { 
 	for (i=S_SARG_RUN1 ; i<=S_SARG_PAIN2 ; i++) 
@@ -1437,7 +1438,8 @@ G_InitNew
 	mobjinfo[MT_BRUISERSHOT].speed = 15*FRACUNIT; 
 	mobjinfo[MT_HEADSHOT].speed = 10*FRACUNIT; 
 	mobjinfo[MT_TROOPSHOT].speed = 10*FRACUNIT; 
-    } 
+    }
+#endif
 	 
 			 
     // force players to be initialized upon first level load         

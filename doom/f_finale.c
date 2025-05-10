@@ -361,7 +361,7 @@ castinfo_t	castorder[] = {
 
 int		castnum;
 int		casttics;
-state_t*	caststate;
+const state_t*	caststate;
 boolean		castdeath;
 int		castframes;
 int		castonmelee;
