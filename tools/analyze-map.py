@@ -81,25 +81,25 @@ def demangle(name: str):
 
 def pretty_size(n: int):
     if n < 500:
-        return f"{n:3} B "
+        return f"{n:4} B "
 
     n /= 1024
 
     if float.is_integer(n) and n < 1000:
-        return f"{n:3.0f} KB"
+        return f"{n:4.0f} KB"
     elif n < 10:
-        return f"{n:3.1f} KB"
+        return f"{n:4.1f} KB"
     elif n < 500:
-        return f"{n:3.0f} KB"
+        return f"{n:4.0f} KB"
 
     n /= 1024
 
     if float.is_integer(n):
-        return f"{n:3.0f} MB"
+        return f"{n:4.0f} MB"
     elif n < 10:
-        return f"{n:3.2f} MB"
+        return f"{n:4.2f} MB"
     else:
-        return f"{n:3.0f} MB"
+        return f"{n:4.0f} MB"
 
 
 @dataclass
@@ -345,6 +345,10 @@ class MapParser(ParserBase):
                 symbol_name = match.group('symbol_name')
                 symbol_origin = int(match.group('symbol_origin'), 16)
 
+                # Skip symbols that just mess up the mapping logic.
+                if symbol_name.startswith('ASSERT') or re.match(r'^[A-Za-z_]+\s*=', symbol_name) is not None:
+                    continue
+
                 symbol = LinkSymbol(symbol_name, symbol_origin)
                 current_section.symbols.append(symbol)
 
@@ -364,10 +368,10 @@ class TreeNode:
         self.nodes: dict[str, TreeNode] = {}
 
     @property
-    def depth(self):
+    def appropriate_tree_width(self):
         if len(self.nodes) == 1:
-            return next(iter(self.nodes.values())).depth
-        return max((child.depth for child in self.nodes.values()), default=0) + 1
+            return next(iter(self.nodes.values())).appropriate_tree_width + 1
+        return max((child.appropriate_tree_width for child in self.nodes.values()), default=0) + 3
 
     def insert(self, path_: list[str], size: int):
         self.size += size
@@ -469,7 +473,7 @@ class TreeNode:
             name_prefix=(),
             total_size=total_size or self.size,
             compact=compact,
-            tree_width=(self.depth - 1) * 3
+            tree_width=self.appropriate_tree_width - 3
         )
 
 
@@ -647,19 +651,20 @@ class CombinedParser(ParserBase):
 
                 if section_path.is_relative_to(Path.cwd()):
                     section_path = section_path.relative_to(Path.cwd())
+                for idx, part in enumerate(section_path.parts):
+                    if part == 'CMakeFiles':
+                        cmake_path = Path(*section_path.parts[:idx + 2])
+                        section_path = section_path.relative_to(cmake_path)
+                        break
+                for trim_part in ('.pico-sdk', 'arm-none-eabi'):
                     for idx, part in enumerate(section_path.parts):
-                        if part == 'CMakeFiles':
-                            cmake_path = Path(*section_path.parts[:idx + 2])
-                            section_path = section_path.relative_to(cmake_path)
-                            break
-                else:
-                    for idx, part in enumerate(section_path.parts):
-                        if part == 'arm-none-eabi':
-                            gcc_path = Path(*section_path.parts[:idx + 1])
-                            section_path = Path(f'({part})') / section_path.relative_to(gcc_path)
+                        if part == trim_part:
+                            base_path = Path(*section_path.parts[:idx + 1])
+                            section_path = Path(f'({part})') / section_path.relative_to(base_path)
                             break
 
                 if len(section.symbols) == 0:
+                    assert section.length >= 0, f'Section {section.name} length = {section.length}'
                     root.insert(section_path.parts, section.length)
                     end = section.origin + section.length
                     if region.load_address:
@@ -667,6 +672,7 @@ class CombinedParser(ParserBase):
                     last_end = max(last_end, end)
                 else:
                     for symbol in section.symbols:
+                        assert symbol.size >= 0, f'Symbol {symbol.name} length = {symbol.size}'
                         symbol_path = section_path / symbol.name
                         root.insert(symbol_path.parts, symbol.size)
                         end = symbol.origin + symbol.size
