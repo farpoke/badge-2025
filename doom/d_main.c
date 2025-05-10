@@ -25,7 +25,8 @@
 //-----------------------------------------------------------------------------
 
 
-static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
+// static const char rcsid[] = "$Id: d_main.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
+
 
 #define	BGCOLOR		7
 #define	FGCOLOR		8
@@ -145,7 +146,7 @@ int 		eventtail;
 void D_PostEvent (event_t* ev)
 {
     events[eventhead] = *ev;
-    eventhead = (++eventhead)&(MAXEVENTS-1);
+    eventhead = (eventhead + 1)&(MAXEVENTS-1);
 }
 
 
@@ -162,7 +163,7 @@ void D_ProcessEvents (void)
 	 && (W_CheckNumForName("map01")<0) )
       return;
 	
-    for ( ; eventtail != eventhead ; eventtail = (++eventtail)&(MAXEVENTS-1) )
+    for ( ; eventtail != eventhead ; eventtail = (eventtail + 1)&(MAXEVENTS-1) )
     {
 	ev = &events[eventtail];
 	if (M_Responder (ev))
@@ -558,14 +559,14 @@ void D_AddFile (char *file)
 void IdentifyVersion (void)
 {
 
-    char*	doom1wad;
-    char*	doomwad;
-    char*	doomuwad;
-    char*	doom2wad;
+    char*	doom1wad = NULL;
+    char*	doomwad = NULL;
+    char*	doomuwad = NULL;
+    char*	doom2wad = NULL;
 
-    char*	doom2fwad;
-    char*	plutoniawad;
-    char*	tntwad;
+    char*	doom2fwad = NULL;
+    char*	plutoniawad = NULL;
+    char*	tntwad = NULL;
 
 #ifdef NORMALUNIX
     char *home;

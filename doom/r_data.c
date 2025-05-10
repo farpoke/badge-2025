@@ -24,8 +24,8 @@
 //-----------------------------------------------------------------------------
 
 
-static const char
-rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
+// static const char rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
+
 
 #include "i_system.h"
 #include "z_zone.h"
@@ -188,9 +188,8 @@ R_DrawColumnInCache
     int		count;
     int		position;
     byte*	source;
-    byte*	dest;
-	
-    dest = (byte *)cache + 3;
+
+    // byte*	dest = (byte *)cache + 3;
 	
     while (patch->topdelta != 0xff)
     {

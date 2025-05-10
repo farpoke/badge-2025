@@ -21,8 +21,8 @@
 //-----------------------------------------------------------------------------
 
 
-static const char
-rcsid[] = "$Id: g_game.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
+// static const char rcsid[] = "$Id: g_game.c,v 1.8 1997/02/03 22:45:09 b1 Exp $";
+
 
 #include <string.h>
 #include <stdlib.h>
@@ -113,7 +113,7 @@ int             starttime;          	// for comparative timing purposes
  
 boolean         viewactive; 
  
-boolean         deathmatch;           	// only if started as net death 
+byte            deathmatch;           	// only if started as net death
 boolean         netgame;                // only true if packets are broadcast 
 boolean         playeringame[MAXPLAYERS]; 
 player_t        players[MAXPLAYERS]; 
@@ -456,8 +456,8 @@ void G_DoLoadLevel (void)
     // DOOM determines the sky texture to be used
     // depending on the current episode, and the game version.
     if ( (gamemode == commercial)
-	 || ( gamemode == pack_tnt )
-	 || ( gamemode == pack_plut ) )
+	 || ( gamemission == pack_tnt )
+	 || ( gamemission == pack_plut ) )
     {
 	skytexture = R_TextureNumForName ("SKY3");
 	if (gamemap < 12)
@@ -491,9 +491,11 @@ void G_DoLoadLevel (void)
     memset (gamekeydown, 0, sizeof(gamekeydown)); 
     joyxmove = joyymove = 0; 
     mousex = mousey = 0; 
-    sendpause = sendsave = paused = false; 
-    memset (mousebuttons, 0, sizeof(mousebuttons)); 
-    memset (joybuttons, 0, sizeof(joybuttons)); 
+    sendpause = sendsave = paused = false;
+    *mousebuttons = 0;
+    *joybuttons = 0;
+    // memset (mousebuttons, 0, sizeof(mousebuttons));
+    // memset (joybuttons, 0, sizeof(joybuttons));
 } 
  
  
@@ -760,10 +762,11 @@ void G_Ticker (void)
 //
 void G_InitPlayer (int player) 
 { 
-    player_t*	p; 
+    player_t*	p;
  
     // set up the saved info         
-    p = &players[player]; 
+    p = &players[player];
+    (void)p;
 	 
     // clear everything else to defaults 
     G_PlayerReborn (player); 
@@ -1207,13 +1210,14 @@ void G_DoLoadGame (void)
 	 
     gameaction = ga_nothing; 
 	 
-    length = M_ReadFile (savename, &savebuffer); 
+    length = M_ReadFile (savename, &savebuffer);
+    (void)length;
     save_p = savebuffer + SAVESTRINGSIZE;
     
     // skip the description field 
     memset (vcheck,0,sizeof(vcheck)); 
     sprintf (vcheck,"version %i",VERSION); 
-    if (strcmp (save_p, vcheck)) 
+    if (strcmp ((const char*)save_p, vcheck))
 	return;				// bad version 
     save_p += VERSIONSIZE; 
 			 

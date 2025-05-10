@@ -30,7 +30,7 @@ byte *I_ZoneBase(int *size) {
 int I_GetTime() {
     const auto now = get_absolute_time();
     const auto us = absolute_time_diff_us(_initTime, now);
-    return us * TICRATE / 1'000'000;
+    return static_cast<int>(us * TICRATE / 1'000'000);
 }
 
 void I_StartFrame() {}

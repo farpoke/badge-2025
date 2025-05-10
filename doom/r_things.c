@@ -22,8 +22,7 @@
 //-----------------------------------------------------------------------------
 
 
-static const char
-rcsid[] = "$Id: r_things.c,v 1.5 1997/02/03 16:47:56 b1 Exp $";
+// static const char rcsid[] = "$Id: r_things.c,v 1.5 1997/02/03 16:47:56 b1 Exp $";
 
 
 #include <stdio.h>
@@ -789,8 +788,8 @@ void R_SortVisSprites (void)
     int			i;
     int			count;
     vissprite_t*	ds;
-    vissprite_t*	best;
-    vissprite_t		unsorted;
+    vissprite_t*	best = NULL;
+    static vissprite_t		unsorted;
     fixed_t		bestscale;
 
     count = vissprite_p - vissprites;

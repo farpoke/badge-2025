@@ -76,4 +76,4 @@ target_link_libraries(doom PUBLIC
         pico_time
 )
 
-target_compile_options(doom PRIVATE -Os -g)
+target_compile_options(doom PRIVATE -Os -g -Wall -Werror)

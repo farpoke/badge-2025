@@ -21,8 +21,10 @@
 //
 //-----------------------------------------------------------------------------
 
-static const char
-rcsid[] = "$Id: p_floor.c,v 1.4 1997/02/03 16:47:54 b1 Exp $";
+// static const char rcsid[] = "$Id: p_floor.c,v 1.4 1997/02/03 16:47:54 b1 Exp $";
+
+
+#include <assert.h>
 
 
 #include "z_zone.h"
@@ -498,6 +500,8 @@ EV_BuildStairs
 	    speed = FLOORSPEED*4;
 	    stairsize = 16*FRACUNIT;
 	    break;
+	default:
+	    assert(false && "Invalid stair type");
 	}
 	floor->speed = speed;
 	height = sec->floorheight + stairsize;

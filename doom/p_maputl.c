@@ -24,10 +24,10 @@
 //
 //-----------------------------------------------------------------------------
 
-static const char
-rcsid[] = "$Id: p_maputl.c,v 1.5 1997/02/03 22:45:11 b1 Exp $";
+// static const char rcsid[] = "$Id: p_maputl.c,v 1.5 1997/02/03 22:45:11 b1 Exp $";
 
 
+#include <assert.h>
 #include <stdlib.h>
 
 
@@ -145,6 +145,9 @@ P_BoxOnLineSide
 	p1 = P_PointOnLineSide (tmbox[BOXRIGHT], tmbox[BOXTOP], ld);
 	p2 = P_PointOnLineSide (tmbox[BOXLEFT], tmbox[BOXBOTTOM], ld);
 	break;
+
+    default:
+        assert(false && "Invalid slope type");
     }
 
     if (p1 == p2)

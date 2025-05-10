@@ -26,9 +26,8 @@
 
 #include <stdbool.h>
 
-typedef bool boolean;
-
 typedef unsigned char byte;
+typedef int boolean;
 
 
 // Predefined with some OS.

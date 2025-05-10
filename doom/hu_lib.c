@@ -20,8 +20,7 @@
 //
 //-----------------------------------------------------------------------------
 
-static const char
-rcsid[] = "$Id: hu_lib.c,v 1.3 1997/01/26 07:44:58 b1 Exp $";
+// static const char rcsid[] = "$Id: hu_lib.c,v 1.3 1997/01/26 07:44:58 b1 Exp $";
 
 #include <ctype.h>
 
@@ -145,7 +144,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
     int			lh;
     int			y;
     int			yoffset;
-    static boolean	lastautomapactive = true;
+    // static boolean	lastautomapactive = true;
 
     // Only erases when NOT in automap and the screen is reduced,
     // and the text must either need updating or refreshing
@@ -168,7 +167,7 @@ void HUlib_eraseTextLine(hu_textline_t* l)
 	}
     }
 
-    lastautomapactive = automapactive;
+    // lastautomapactive = automapactive;
     if (l->needsupdate) l->needsupdate--;
 
 }
