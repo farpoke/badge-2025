@@ -82,7 +82,7 @@ target_compile_definitions(${TARGET} PUBLIC
         PICO_STACK_SIZE=0x2000
         PICO_CORE1_STACK_SIZE=0
         # Enable/disable debug print in malloc.
-        PICO_DEBUG_MALLOC=1
+        PICO_DEBUG_MALLOC=0
 )
 
 target_compile_options(${TARGET} PRIVATE
