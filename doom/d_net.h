@@ -26,8 +26,8 @@
 #include "d_player.h"
 
 
-#ifdef __GNUG__
-#pragma interface
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
@@ -137,6 +137,11 @@ void D_QuitNetGame (void);
 
 //? how many ticks to run?
 void TryRunTics (void);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

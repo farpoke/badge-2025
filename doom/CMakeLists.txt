@@ -15,7 +15,7 @@ add_library(doom STATIC
         # i_main.c
         # i_net.c
         # i_sound.c
-        i_system.c
+        # i_system.c
         # i_video.c
         info.c
         m_argv.c
@@ -63,10 +63,11 @@ add_library(doom STATIC
         wi_stuff.c
         z_zone.c
 
-        rp2040/graphics.c
         rp2040/launch_doom.c
         rp2040/network.c
         rp2040/no_sound.c
+        rp2040/system.cpp
+        rp2040/video.cpp
 )
 
 target_include_directories(doom PRIVATE "${CMAKE_CURRENT_LIST_DIR}/rp2040")

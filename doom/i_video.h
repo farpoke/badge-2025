@@ -26,8 +26,9 @@
 
 #include "doomtype.h"
 
-#ifdef __GNUG__
-#pragma interface
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
@@ -53,6 +54,10 @@ void I_ReadScreen (byte* scr);
 void I_BeginRead (void);
 void I_EndRead (void);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

@@ -137,7 +137,7 @@ public:
     }
     */
 
-    // launch_doom();
+    launch_doom();
 
     printf("> Main loop...\n");
     auto last_frame_time = get_absolute_time();

@@ -26,8 +26,9 @@
 #include "d_ticcmd.h"
 #include "d_event.h"
 
-#ifdef __GNUG__
-#pragma interface
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 
@@ -87,6 +88,11 @@ void I_Tactile (int on, int off, int total);
 
 
 void I_Error (char *error, ...);
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif

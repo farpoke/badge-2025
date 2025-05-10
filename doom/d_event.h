@@ -27,6 +27,11 @@
 #include "doomtype.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
 //
 // Event handling.
 //
@@ -112,6 +117,12 @@ extern  int             eventhead;
 extern	int		eventtail;
 
 extern  gameaction_t    gameaction;
+
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif
