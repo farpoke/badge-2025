@@ -11,6 +11,9 @@ namespace ui
         void update(int delta_ms) override;
         void draw() override;
 
+        void pause() override;
+        void resume() override;
+
     private:
 
     };

@@ -57,6 +57,7 @@ class AssetCollection:
             '',
             '#include <cstdint>',
             '',
+            '#include <badge/animation.hpp>',
             '#include <badge/font_data.hpp>',
             '#include <badge/image.hpp>',
             '',

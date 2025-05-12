@@ -82,7 +82,7 @@ namespace
         lcd::internal::read_id();
         lcd::internal::read_status();
 
-        lcd::backlight_on(20);
+        lcd::backlight_on(30);
 
         printf("> Core 1 running...\n");
         stdio_flush();

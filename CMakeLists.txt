@@ -51,6 +51,7 @@ pico_sdk_init()
 # Create target executable with our sources.
 add_executable(${TARGET}
         main.cpp
+        badge/animation.cpp
         badge/buttons.cpp
         badge/drawing.cpp
         badge/flags.cpp
