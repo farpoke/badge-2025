@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <string>
 
+#include <badge/image.hpp>
+
 namespace flags
 {
 
@@ -39,5 +41,7 @@ namespace flags
     int count_flags();
 
     std::string get_konami_code();
+
+    const image::Image& get_flag_image(Flag flag);
 
 }

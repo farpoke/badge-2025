@@ -30,28 +30,28 @@ namespace ui
 
     static constexpr auto BORDER_COLOR = COLOR_WHITE;
 
-    static constexpr const char* LAYOUT_UPPERCASE[3] = {
-        "ABCDEFGHIJ",
-        "KLMNOPQRST",
-        "UVWXYZ",
+    static constexpr const char *LAYOUT_UPPERCASE[3] = {
+            "ABCDEFGHIJ",
+            "KLMNOPQRST",
+            "UVWXYZ",
     };
 
-    static constexpr const char* LAYOUT_LOWERCASE[3] = {
-        "abcdefghij",
-        "klmnopqrst",
-        "uvwxyz",
+    static constexpr const char *LAYOUT_LOWERCASE[3] = {
+            "abcdefghij",
+            "klmnopqrst",
+            "uvwxyz",
     };
 
-    static constexpr const char* LAYOUT_DIGITS[3] = {
-        "1234567890",
-        "@#$&_-()=%",
-        ".,:;!?",
+    static constexpr const char *LAYOUT_DIGITS[3] = {
+            "1234567890",
+            "@#$&_-()=%",
+            ".,:;!?",
     };
 
-    static constexpr const char* LAYOUT_OTHERS[3] = {
-        "1234567890",
-        "[]{}<>^'\" ",
-        "~+/\\; ",
+    static constexpr const char *LAYOUT_OTHERS[3] = {
+            "1234567890",
+            "[]{}<>^'\" ",
+            "~+/\\; ",
     };
 
     enum SpecialValue : char {
@@ -63,7 +63,7 @@ namespace ui
         ESV_ENTER = 6,
     };
 
-    static constexpr auto SWITCH_CASE_LABEL    = "A/a";
+    static constexpr auto SWITCH_CASE_LABEL = "A/a";
     static constexpr auto SWITCH_LETTERS_LABEL = "ABC";
     static constexpr auto SWITCH_NUMBERS_LABEL = "1!?";
     static constexpr auto SWITCH_SYMBOLS_LABEL = "<[{";
@@ -81,22 +81,22 @@ namespace ui
         int col_span = 1;
         char value = 0;
         std::string_view label = {};
-        Button* up = nullptr;
-        Button* down = nullptr;
-        Button* left = nullptr;
-        Button* right = nullptr;
+        Button *up = nullptr;
+        Button *down = nullptr;
+        Button *left = nullptr;
+        Button *right = nullptr;
     };
 
-    void build_keyboard(std::vector<Button*>& button_collection) {
+    void build_keyboard(std::vector<Button *> &button_collection) {
 
         // Use this temporary array to keep track of buttons and link them together appropriately.
-        Button* grid[4][10];
+        Button *grid[4][10];
         for (int i = 0; i < 4; i++)
             for (int j = 0; j < 10; j++)
                 grid[i][j] = nullptr;
 
         const auto create_button = [&](int row, int col, int span_cols) {
-            auto* new_button = new Button();
+            auto *new_button = new Button();
 
             new_button->x = KEYBOARD_X0 + col * (BUTTON_WIDTH - 1);
             new_button->y = KEYBOARD_Y0 + row * (BUTTON_HEIGHT - 1);
@@ -143,7 +143,7 @@ namespace ui
         // Now that we have all the buttons, use the temporary grid to link them together for navigation.
         for (int row = 0; row < 4; row++) {
             for (int col = 0; col < 10; col++) {
-                auto* button = grid[row][col];
+                auto *button = grid[row][col];
                 assert(button != nullptr);
                 if (button->up == nullptr)
                     button->up = grid[(button->row + 3) % 4][button->col];
@@ -157,14 +157,18 @@ namespace ui
         }
     }
 
-    void update_keyboard(const std::vector<Button*>& button_collection, CodeEntry::Layout active_layout) {
-        const char* const* character_layout;
-        if (active_layout == EL_UPPERCASE) character_layout = LAYOUT_UPPERCASE;
-        else if (active_layout == EL_LOWERCASE) character_layout = LAYOUT_LOWERCASE;
-        else if (active_layout == EL_DIGITS) character_layout = LAYOUT_DIGITS;
-        else character_layout = LAYOUT_OTHERS;
+    void update_keyboard(const std::vector<Button *> &button_collection, CodeEntry::Layout active_layout) {
+        const char *const *character_layout;
+        if (active_layout == EL_UPPERCASE)
+            character_layout = LAYOUT_UPPERCASE;
+        else if (active_layout == EL_LOWERCASE)
+            character_layout = LAYOUT_LOWERCASE;
+        else if (active_layout == EL_DIGITS)
+            character_layout = LAYOUT_DIGITS;
+        else
+            character_layout = LAYOUT_OTHERS;
 
-        for (auto* button : button_collection) {
+        for (auto *button : button_collection) {
             if (button->value >= ' ') {
                 button->value = character_layout[button->row][button->col];
                 button->label = std::string_view(&button->value, 1);
@@ -210,6 +214,19 @@ namespace ui
                 press_timer = 0;
         }
 
+        if (show_flag_timer > 0) {
+            show_flag_timer -= delta_ms;
+            if (show_flag_timer <= 0) {
+                show_flag_timer = 0;
+                if (flag != flags::INVALID) {
+                    pop_state();
+                    return;
+                }
+            }
+            else
+                return;
+        }
+
         const auto bits = buttons::get(~0);
         if (bits != 0) {
             if ((konami_count == 0 || konami_count == 1) && bits == (1 << BTN_UP))
@@ -238,10 +255,14 @@ namespace ui
             const auto value = selected_button->value;
             press_timer = 100;
             if (value == ESV_LAYOUT_SWITCH_1) {
-                if (current_layout == EL_UPPERCASE) current_layout = EL_LOWERCASE;
-                else if (current_layout == EL_LOWERCASE) current_layout = EL_UPPERCASE;
-                else if (current_layout == EL_DIGITS) current_layout = EL_OTHER;
-                else current_layout = EL_DIGITS;
+                if (current_layout == EL_UPPERCASE)
+                    current_layout = EL_LOWERCASE;
+                else if (current_layout == EL_LOWERCASE)
+                    current_layout = EL_UPPERCASE;
+                else if (current_layout == EL_DIGITS)
+                    current_layout = EL_OTHER;
+                else
+                    current_layout = EL_DIGITS;
                 update_keyboard(buttons, current_layout);
             }
             else if (value == ESV_LAYOUT_SWITCH_2) {
@@ -261,7 +282,7 @@ namespace ui
                 delete_char();
             }
             else if (value == ESV_ENTER) {
-                // ...
+                enter();
             }
             else if (value > ' ') {
                 append_char(value);
@@ -282,7 +303,13 @@ namespace ui
     void CodeEntry::draw() {
         drawing::clear(COLOR_BLACK);
 
-        for (const auto* button : buttons) {
+        if (show_flag_timer > 0) {
+            const auto &image = flags::get_flag_image(flag);
+            drawing::draw_image((lcd::WIDTH - image.width) / 2, (lcd::HEIGHT - image.height) / 2, image);
+            return;
+        }
+
+        for (const auto *button : buttons) {
             auto bg_color = NORMAL_BG;
             auto fg_color = NORMAL_FG;
             if (button == selected_button) {
@@ -309,7 +336,11 @@ namespace ui
         drawing::draw_text(x, y, 0, 0, COLOR_WHITE, render);
 
         if (show_konami)
-            drawing::draw_text_centered(lcd::WIDTH / 2, 10, "gbgay{" + flags::get_konami_code() + "}", COLOR_WHITE, font::m5x7);
+            drawing::draw_text_centered(lcd::WIDTH / 2,
+                                        10,
+                                        "gbgay{" + flags::get_konami_code() + "}",
+                                        COLOR_WHITE,
+                                        font::m5x7);
     }
 
     void CodeEntry::pause() {
@@ -328,16 +359,20 @@ namespace ui
         konami_count = 0;
         show_konami = false;
         entry_text = {};
+        show_flag_timer = 0;
+        flag = flags::INVALID;
     }
 
-    void CodeEntry::append_char(char ch) {
-        entry_text += ch;
-    }
+    void CodeEntry::append_char(char ch) { entry_text += ch; }
 
     void CodeEntry::delete_char() {
         if (!entry_text.empty())
             entry_text.erase(entry_text.end() - 1);
     }
 
+    void CodeEntry::enter() {
+        flag = flags::validate_flag(entry_text);
+        show_flag_timer = 2500;
+    }
 
-}
+} // namespace ui

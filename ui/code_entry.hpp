@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <badge/flags.hpp>
+
 namespace ui
 {
 
@@ -34,11 +36,15 @@ namespace ui
         int press_timer = 0;
         int konami_count = 0;
         bool show_konami = false;
+        int show_flag_timer = 0;
+        flags::Flag flag = flags::INVALID;
 
         std::string entry_text;
 
         void append_char(char ch);
         void delete_char();
+
+        void enter();
 
     };
 

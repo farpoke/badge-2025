@@ -89,6 +89,22 @@ images:
     image: gfx/blocks-tiles.png
     alpha: false
 
+  flag_invalid: gfx/flags_00.png
+  flag_badge_readme: gfx/flags_01.png
+  flag_badge_hidden: gfx/flags_02.png
+  flag_badge_konami: gfx/flags_03.png
+  flag_badge_rickroll: gfx/flags_04.png
+  flag_badge_pi: gfx/flags_05.png
+  flag_badge_baudot: gfx/flags_06.png
+  flag_misc_rebekah: gfx/flags_07.png
+  flag_misc_social: gfx/flags_08.png
+  flag_misc_literal1: gfx/flags_09.png
+  flag_misc_literal2: gfx/flags_10.png
+  flag_arduino_morse: gfx/flags_11.png
+  flag_arduino_serial: gfx/flags_12.png
+  flag_crypto_caesar: gfx/flags_13.png
+  flag_lockpick_basic: gfx/flags_14.png
+  flag_lockpick_elite: gfx/flags_15.png
 
 animations:
 
