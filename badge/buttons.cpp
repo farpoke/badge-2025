@@ -36,15 +36,15 @@ namespace buttons
         current_state = ~gpio_get_all() & MASK;
     }
 
-    bool get(uint32_t mask) {
+    uint32_t get(uint32_t mask) {
         return (current_state & mask) & ~(previous_state & mask);
     }
 
-    bool get_current(uint32_t mask) {
+    uint32_t get_current(uint32_t mask) {
         return current_state & mask;
     }
 
-    bool get_changed(uint32_t mask) {
+    uint32_t get_changed(uint32_t mask) {
         return (current_state & mask) ^ (previous_state & mask);
     }
 

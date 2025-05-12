@@ -705,8 +705,8 @@ class CombinedParser(ParserBase):
         self._print_object_hierarchy('RAM', self.ram_start, self.ram_end, 1024)
 
     def print_report(self):
-        self.print_memory_regions()
-        self.print_link_regions()
+        # self.print_memory_regions()
+        # self.print_link_regions()
         # self.print_largest_sections()
         # self.print_largest_objects()
         self.print_flash_object_hierarchy()

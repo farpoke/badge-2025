@@ -88,3 +88,44 @@ images:
   blocks_tiles:
     image: gfx/blocks-tiles.png
     alpha: false
+
+
+animations:
+
+  blahaj_spin:
+    path: gif/blahaj-go-spinny-blahaj.gif
+    preview: gif/preview/blahaj.gif
+    decimate: 2
+
+  dramatic:
+    path: gif/dramatic.gif
+    preview: gif/preview/dramatic.gif
+    trim: [0, 0, 0, 10]
+
+  fire:
+    path: gif/fire.gif
+    preview: gif/preview/fire.gif
+    trim: [0, 10, 0, 20]
+    decimate: 2
+
+  hi_there:
+    path: gif/hi-there-hi.gif
+    preview: gif/preview/hi-there.gif
+    bpp: 3
+
+  pedro:
+    path: gif/pedro-pedro.gif
+    preview: gif/preview/pedro.gif
+    trim: [0, 80, 0, 80]
+    rotate: 90
+    frames: 100
+
+  rap_win:
+    path: gif/rap-win.gif
+    preview: gif/preview/rap-win.gif
+    decimate: 3
+
+  rick:
+    path: gif/rick.gif
+    preview: gif/preview/rick.gif
+    decimate: 3

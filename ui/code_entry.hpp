@@ -32,6 +32,8 @@ namespace ui
         std::vector<Button*> buttons;
         Button* selected_button = nullptr;
         int press_timer = 0;
+        int konami_count = 0;
+        bool show_konami = false;
 
         std::string entry_text;
 

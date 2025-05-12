@@ -1,5 +1,5 @@
 build
 cmake-build-*
 __pycache__
-fonts/cpp/*
 .idea
+badge/flags-data.inc

@@ -4,6 +4,7 @@
 
 #include <badge/buttons.hpp>
 #include <badge/drawing.hpp>
+#include <badge/flags.hpp>
 #include <cstring>
 #include <ui/ui.hpp>
 
@@ -49,7 +50,7 @@ namespace ui
 
     static constexpr const char* LAYOUT_OTHERS[3] = {
         "1234567890",
-        "[]{}<>^   ",
+        "[]{}<>^'\" ",
         "~+/\\; ",
     };
 
@@ -64,7 +65,7 @@ namespace ui
 
     static constexpr auto SWITCH_CASE_LABEL    = "A/a";
     static constexpr auto SWITCH_LETTERS_LABEL = "ABC";
-    static constexpr auto SWITCH_NUMBERS_LABEL = "123";
+    static constexpr auto SWITCH_NUMBERS_LABEL = "1!?";
     static constexpr auto SWITCH_SYMBOLS_LABEL = "<[{";
 
     static constexpr auto EXIT_LABEL = "Exit";
@@ -209,6 +210,30 @@ namespace ui
                 press_timer = 0;
         }
 
+        const auto bits = buttons::get(~0);
+        if (bits != 0) {
+            if ((konami_count == 0 || konami_count == 1) && bits == (1 << BTN_UP))
+                konami_count++; // NOLINT(*-branch-clone)
+            else if ((konami_count == 2 || konami_count == 3) && bits == (1 << BTN_DOWN))
+                konami_count++;
+            else if ((konami_count == 4 || konami_count == 6) && bits == (1 << BTN_LEFT))
+                konami_count++;
+            else if ((konami_count == 5 || konami_count == 7) && bits == (1 << BTN_RIGHT))
+                konami_count++;
+            else if (konami_count == 8 && bits == (1 << BTN_B))
+                konami_count++;
+            else if (konami_count == 9 && bits == (1 << BTN_A))
+                konami_count++;
+            else
+                konami_count = 0;
+
+            if (konami_count == 10) {
+                konami_count = 0;
+                show_konami = true;
+                return;
+            }
+        }
+
         if (buttons::a() || buttons::push()) {
             const auto value = selected_button->value;
             press_timer = 100;
@@ -282,6 +307,9 @@ namespace ui
         const int x = lcd::WIDTH / 2 - render.dx - render.width / 2;
         const int y = KEYBOARD_Y0 / 2 - render.dy - render.height / 2;
         drawing::draw_text(x, y, 0, 0, COLOR_WHITE, render);
+
+        if (show_konami)
+            drawing::draw_text_centered(lcd::WIDTH / 2, 10, "gbgay{" + flags::get_konami_code() + "}", COLOR_WHITE, font::m5x7);
     }
 
     void CodeEntry::pause() {
@@ -297,6 +325,8 @@ namespace ui
         update_keyboard(buttons, current_layout);
         selected_button = buttons.front();
         press_timer = 0;
+        konami_count = 0;
+        show_konami = false;
         entry_text = {};
     }
 

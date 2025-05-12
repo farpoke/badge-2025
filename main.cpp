@@ -11,11 +11,13 @@
 #include <badge/buttons.hpp>
 #include <badge/drawing.hpp>
 #include <badge/font.hpp>
+#include <badge/storage.hpp>
 #include <core/core1.hpp>
 #include <games/blocks.hpp>
 #include <games/flappy.hpp>
 #include <games/othello.hpp>
 #include <games/snek.hpp>
+#include <ui/animations.hpp>
 #include <ui/code_entry.hpp>
 #include <ui/menu.hpp>
 #include <ui/qr_code.hpp>
@@ -110,6 +112,8 @@ public:
 
     core1::reset_and_launch();
 
+    storage::run_flash_test();
+
     disable_pwr_leds();
 
     const auto menu = ui::make_state<ui::MainMenu>();
@@ -121,13 +125,16 @@ public:
     menu->add_item("Snek", ui::make_state<snek::SnekGame>());
     menu->add_item("Othello", ui::make_state<othello::OthelloGame>());
     // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
-    menu->add_item("GPIO Control", nullptr);
-    menu->add_item("SAO Control", nullptr);
+    menu->add_item("Gallery", ui::make_state<ui::AnimationGallery>());
+    // menu->add_item("GPIO Control", nullptr);
+    // menu->add_item("SAO Control", nullptr);
     // menu->add_item("Font Test", ui::make_state<FontTest>());
     menu->add_item("Bootloader", [] { rom_reset_usb_boot_extra(-1, 0, false); });
 
     ui::push_state(menu);
-    // ui::push_new_state<ui::SplashScreen>();
+    ui::push_new_state<ui::SplashScreen>();
+
+    ui::push_new_state<ui::AnimationGallery>();
 
     /*
     enable_stdio_to_usb();

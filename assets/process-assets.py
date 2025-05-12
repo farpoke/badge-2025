@@ -30,6 +30,9 @@ class AssetCollection:
             else:
                 self.assets[name] = ImageAsset(name, **spec)
 
+        for name, spec in assets_spec['animations'].items():
+            self.assets[name] = AnimationAsset(name, **spec)
+
     def all_dependencies(self):
         for item in self._fs_items:
             match item:

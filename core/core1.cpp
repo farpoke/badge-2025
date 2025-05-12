@@ -2,6 +2,7 @@
 
 #include <cstdio>
 
+#include <pico/flash.h>
 #include <pico/multicore.h>
 #include <pico/stdio.h>
 
@@ -72,6 +73,8 @@ namespace
 
     [[noreturn]] void core1_main() {
         printf("> Core 1 starting...\n");
+
+        flash_safe_execute_core_init();
 
         lcd::internal::init();
         lcd::internal::exit_sleep();

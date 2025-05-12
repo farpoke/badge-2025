@@ -11,6 +11,10 @@ controlling the header input/output pins. This README file is available both
 through the main menu of the badge itself, and on the USB drive available by
 plugging the badge into a computer.
 
+Note: The games here are provided for fun and to illustrate what can be done
+with tiny hardware, and winning a game does not provide any secret flags.
+However, no such guarantees are provided for the rest of the badge :3
+
 
 
 # Code Entry
@@ -39,6 +43,18 @@ This is a legally distinct implementation of the classic game of Tetris. An
 attempt has been made to follow the Tetris Guidelines and SRS standard, but it
 might not be perfect and some features (such as sound effects) are missing by
 necessity.
+
+
+
+# Othello
+
+The game of Othello, also known as Reversi.
+
+
+
+# Gallery
+
+A small gallery of animations (meme GIFs) included for fun.
 
 
 
@@ -82,9 +98,11 @@ flags, the repository is private until after the event.
 
 
 
-* The exception to the rule is that there are two short codes hidden on the
-  badge PCB itself, which due to space constraints do not include the leading
-  "gbgay{" or trailing "}".
+* There are, of course, some exceptions to the rule, where, due to the nature
+  of the challenge and/or flag, the leading "gbgay{" and trailing "}" have
+  been omitted. For example, there are two short codes hidden on the badge
+  PCB itself that have strict space constraints, one specific challenge that
+  omits them for similar reasons.
 
 
 

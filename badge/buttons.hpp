@@ -10,9 +10,9 @@ namespace buttons
     void init();
     void update();
 
-    bool get(uint32_t mask);
-    bool get_current(uint32_t mask);
-    bool get_changed(uint32_t mask);
+    uint32_t get(uint32_t mask);
+    uint32_t get_current(uint32_t mask);
+    uint32_t get_changed(uint32_t mask);
 
 #define MAKE_BUTTON_FUNCS(name, NAME)                                                                                  \
     inline bool name() { return get(1 << NAME); }                                                                      \

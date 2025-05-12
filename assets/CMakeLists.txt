@@ -19,6 +19,7 @@ add_custom_command(
         DEPENDS
             "${CMAKE_CURRENT_LIST_DIR}/process-assets.py"
             "${CMAKE_CURRENT_LIST_DIR}/assets/__init__.py"
+            "${CMAKE_CURRENT_LIST_DIR}/assets/animation.py"
             "${CMAKE_CURRENT_LIST_DIR}/assets/base.py"
             "${CMAKE_CURRENT_LIST_DIR}/assets/filesystem.py"
             "${CMAKE_CURRENT_LIST_DIR}/assets/font.py"

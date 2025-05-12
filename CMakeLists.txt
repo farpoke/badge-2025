@@ -33,6 +33,9 @@ endif()
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/badge)
 set(PICO_BOARD badge-2025 CACHE STRING "Board type")
 
+# Our prototype PCB has 4 MiB of FLASH.
+set(PICO_FLASH_SIZE_BYTES "4 * 1024 * 1024")
+
 # Name of our project and target.
 set(TARGET badge-2025)
 
@@ -50,8 +53,10 @@ add_executable(${TARGET}
         main.cpp
         badge/buttons.cpp
         badge/drawing.cpp
+        badge/flags.cpp
         badge/font.cpp
         badge/lcd.cpp
+        badge/storage.cpp
         core/core1.cpp
         core/irq.cpp
         fs/fs.cpp
@@ -60,6 +65,7 @@ add_executable(${TARGET}
         games/flappy.cpp
         games/othello.cpp
         games/snek.cpp
+        ui/animations.cpp
         ui/code_entry.cpp
         ui/menu.cpp
         ui/qr_code.cpp
@@ -137,6 +143,7 @@ target_link_libraries(${TARGET}
         pico_aon_timer
         pico_base_headers
         pico_bootsel_via_double_reset
+        pico_flash
         pico_multicore
         pico_platform
         pico_platform_compiler
@@ -155,8 +162,8 @@ add_subdirectory(assets)
 target_link_libraries(${TARGET} assets)
 
 # Add in our DOOM port.
-add_subdirectory(doom)
-target_link_libraries(${TARGET} doom)
+# add_subdirectory(doom)
+# target_link_libraries(${TARGET} doom)
 
 # Ask the pico SDK to generate extra outputs for our target.
 pico_add_extra_outputs(${TARGET})
