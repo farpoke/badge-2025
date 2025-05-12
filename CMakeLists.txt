@@ -76,6 +76,7 @@ add_executable(${TARGET}
         usb/stdio_driver.cpp
         usb/usb-descriptors.cpp
         usb/usb.cpp
+        utils/crc.cpp
 )
 target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
