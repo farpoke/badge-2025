@@ -6,6 +6,8 @@
 namespace utils
 {
 
-    uint8_t crc8(std::span<const std::byte> data);
+    uint8_t crc8(std::span<const uint8_t> data);
+
+    uint32_t crc32(std::span<const uint8_t> data);
 
 }

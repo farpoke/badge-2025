@@ -1,7 +1,6 @@
 import math
 from pathlib import Path
 from PIL import Image, GifImagePlugin
-import matplotlib.pyplot as plt
 
 from .base import AssetBase
 

@@ -112,9 +112,9 @@ public:
 
     core1::reset_and_launch();
 
-    storage::run_flash_test();
-
     disable_pwr_leds();
+
+    storage::init();
 
     const auto menu = ui::make_state<ui::MainMenu>();
     menu->add_item("README", ui::make_state<ui::Readme>());

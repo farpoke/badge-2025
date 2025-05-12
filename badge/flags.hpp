@@ -6,6 +6,8 @@
 namespace flags
 {
 
+    constexpr auto MAX_FLAG_LENGTH = 24;
+
     enum Flag : uint8_t {
         BADGE_README = 0,
         BADGE_HIDDEN,

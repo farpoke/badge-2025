@@ -7,14 +7,13 @@
 namespace flags
 {
 
-    constexpr auto MAX_FLAG_LENGTH = 15;
-
 #include "flags-data.inc"
 
     consteval std::array<uint8_t, MAX_FLAG_LENGTH * FLAG_COUNT> obfuscate_flags() {
         std::array<uint8_t, MAX_FLAG_LENGTH * FLAG_COUNT> result = {};
         for (int i = 0; i < FLAG_COUNT; i++) {
             const auto flag = get_plaintext_flag(static_cast<Flag>(i));
+            assert(flag.length() <= MAX_FLAG_LENGTH);
             for (size_t j = 0; j < MAX_FLAG_LENGTH; j++) {
                 if (j < flag.length())
                     result[i * MAX_FLAG_LENGTH + j] = flag[j];

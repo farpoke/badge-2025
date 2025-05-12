@@ -5,25 +5,31 @@
 
 #include <hardware/flash.h>
 
+#include <badge/flags.hpp>
+
 namespace storage
 {
 
-    using bytes_t = std::span<const uint8_t>;
+    constexpr auto STORAGE_UNIT_PAGES = 2;
+    constexpr auto STORAGE_UNIT_SIZE = FLASH_PAGE_SIZE * STORAGE_UNIT_PAGES;
 
-    constexpr auto STORAGE_SECTORS = 2;
-    constexpr auto STORAGE_SIZE = STORAGE_SECTORS * FLASH_SECTOR_SIZE;
+    static_assert(FLASH_SECTOR_SIZE % STORAGE_UNIT_SIZE == 0);
 
-    enum class Key : uint8_t {
-        ERASED = 0,
+    struct StorageData {
 
-        ENTERED_FLAGS,
+        char entered_flags[flags::FLAG_COUNT][flags::MAX_FLAG_LENGTH] = {};
 
-        EMPTY = 0xFF,
+        int snek_highscore = 0;
+        int blocks_highscore = 0;
+
     };
 
-    bytes_t read(Key key);
-    void write(Key key, bytes_t data);
+    static_assert(sizeof(StorageData) < STORAGE_UNIT_SIZE - 4);
 
-    void run_flash_test();
+    extern StorageData* ram_data;
+
+    void init();
+    void erase();
+    void save();
 
 }
