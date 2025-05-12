@@ -41,10 +41,9 @@ namespace flags
             for (int i = 0; i < MAX_FLAG_LENGTH; i++) {
                 assert(idx < OBFUSCATED_FLAGS.size());
                 auto byte = OBFUSCATED_FLAGS[idx];
-                byte ^= key;
+                buffer[i] = byte ^ key;
                 key = key ^ key << 3 ^ byte >> 3;
                 idx++;
-                buffer[i] = byte;
             }
             buffer[MAX_FLAG_LENGTH] = 0;
             const std::string plaintext(buffer);
