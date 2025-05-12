@@ -188,16 +188,42 @@ namespace blocks
     }
 
     void BlocksGame::rotate_cw() {
+        if (current_piece == PIECE_O)
+            return;
         const int new_rotation = (current_rotation + 1) % 4;
         if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation))
             current_rotation = new_rotation;
+        else {
+            const auto &[cw_kicks, _] = (current_piece == PIECE_I) ? I_KICK_DATA : JLTSZ_KICK_DATA;
+            for (const auto& [dx, dy] : cw_kicks[current_rotation]) {
+                if (try_place_piece(current_piece_row + dy, current_piece_col + dx, current_piece, new_rotation)) {
+                    current_rotation = new_rotation;
+                    current_piece_col += dx;
+                    current_piece_row += dy;
+                    break;
+                }
+            }
+        }
         update_ghost_row();
     }
 
     void BlocksGame::rotate_ccw() {
+        if (current_piece == PIECE_O)
+            return;
         const int new_rotation = (current_rotation + 3) % 4;
         if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation))
             current_rotation = new_rotation;
+        else {
+            const auto &[_, ccw_kicks] = (current_piece == PIECE_I) ? I_KICK_DATA : JLTSZ_KICK_DATA;
+            for (const auto& [dx, dy] : ccw_kicks[current_rotation]) {
+                if (try_place_piece(current_piece_row + dy, current_piece_col + dx, current_piece, new_rotation)) {
+                    current_rotation = new_rotation;
+                    current_piece_col += dx;
+                    current_piece_row += dy;
+                    break;
+                }
+            }
+        }
         update_ghost_row();
     }
 

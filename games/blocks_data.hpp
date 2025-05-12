@@ -294,4 +294,82 @@ namespace blocks
             },
     };
 
+    /**
+     * Wall/super kick data table for the J, L, T, S, and Z pieces.
+     *
+     * See https://tetris.fandom.com/wiki/SRS
+     */
+    constexpr kick_data_t JLTSZ_KICK_DATA = {
+            {
+                    // CW kicks
+
+                    // Rotation 0 -> 1
+                    kick_tests_t{{
+                            {-1, 0},
+                            {-1, 1},
+                            {0, -2},
+                            {-1, -2},
+                    }},
+
+                    // Rotation 1 -> 2
+                    kick_tests_t{{
+                            {1, 0},
+                            {1, -1},
+                            {0, 2},
+                            {1, 2},
+                    }},
+
+                    // Rotation 2 -> 3
+                    kick_tests_t{{
+                            {1, 0},
+                            {1, 1},
+                            {0, -2},
+                            {1, -2},
+                    }},
+
+                    // Rotation 3 -> 0
+                    kick_tests_t{{
+                            {-1, 0},
+                            {-1, -1},
+                            {0, 2},
+                            {-1, 2},
+                    }},
+            },
+            {
+                    // CCW kicks
+
+                    // Rotation 0 -> 3
+                    kick_tests_t{{
+                            {1, 0},
+                            {1, 1},
+                            {0, -2},
+                            {1, -2},
+                    }},
+
+                    // Rotation 1 -> 0
+                    kick_tests_t{{
+                            {1, 0},
+                            {1, -1},
+                            {0, 2},
+                            {1, 2},
+                    }},
+
+                    // Rotation 2 -> 1
+                    kick_tests_t{{
+                            {-1, 0},
+                            {-1, 1},
+                            {0, -2},
+                            {-1, -2},
+                    }},
+
+                    // Rotation 3 -> 2
+                    kick_tests_t{{
+                            {-1, 0},
+                            {-1, -1},
+                            {0, 2},
+                            {-1, 2},
+                    }},
+            },
+    };
+
 } // namespace blocks
