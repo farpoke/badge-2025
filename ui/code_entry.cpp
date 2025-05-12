@@ -255,22 +255,10 @@ namespace ui
             const auto value = selected_button->value;
             press_timer = 100;
             if (value == ESV_LAYOUT_SWITCH_1) {
-                if (current_layout == EL_UPPERCASE)
-                    current_layout = EL_LOWERCASE;
-                else if (current_layout == EL_LOWERCASE)
-                    current_layout = EL_UPPERCASE;
-                else if (current_layout == EL_DIGITS)
-                    current_layout = EL_OTHER;
-                else
-                    current_layout = EL_DIGITS;
-                update_keyboard(buttons, current_layout);
+                switch_layout_1();
             }
             else if (value == ESV_LAYOUT_SWITCH_2) {
-                if (current_layout == EL_UPPERCASE || current_layout == EL_LOWERCASE)
-                    current_layout = EL_DIGITS;
-                else
-                    current_layout = EL_UPPERCASE;
-                update_keyboard(buttons, current_layout);
+                switch_layout_2();
             }
             else if (value == ESV_EXIT) {
                 pop_state();
@@ -290,6 +278,10 @@ namespace ui
         }
         else if (buttons::b())
             delete_char();
+        else if (buttons::c())
+            switch_layout_1();
+        else if (buttons::d())
+            switch_layout_2();
         else if (buttons::up())
             selected_button = selected_button->up;
         else if (buttons::down())
@@ -331,8 +323,10 @@ namespace ui
         }
 
         const auto render = font::m6x11.render("gbgay{" + entry_text + "}");
-        const int x = lcd::WIDTH / 2 - render.dx - render.width / 2;
+        int x = lcd::WIDTH / 2 - render.dx - render.width / 2;
         const int y = KEYBOARD_Y0 / 2 - render.dy - render.height / 2;
+        if (x + render.width > lcd::WIDTH - 10)
+            x = lcd::WIDTH - 10 - render.width;
         drawing::draw_text(x, y, 0, 0, COLOR_WHITE, render);
 
         if (show_konami)
@@ -362,6 +356,27 @@ namespace ui
         show_flag_timer = 0;
         flag = flags::INVALID;
     }
+
+    void CodeEntry::switch_layout_1() {
+        if (current_layout == EL_UPPERCASE)
+            current_layout = EL_LOWERCASE;
+        else if (current_layout == EL_LOWERCASE)
+            current_layout = EL_UPPERCASE;
+        else if (current_layout == EL_DIGITS)
+            current_layout = EL_OTHER;
+        else
+            current_layout = EL_DIGITS;
+        update_keyboard(buttons, current_layout);
+    }
+
+    void CodeEntry::switch_layout_2() {
+        if (current_layout == EL_UPPERCASE || current_layout == EL_LOWERCASE)
+            current_layout = EL_DIGITS;
+        else
+            current_layout = EL_UPPERCASE;
+        update_keyboard(buttons, current_layout);
+    }
+
 
     void CodeEntry::append_char(char ch) { entry_text += ch; }
 

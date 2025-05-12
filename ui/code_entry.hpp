@@ -41,6 +41,9 @@ namespace ui
 
         std::string entry_text;
 
+        void switch_layout_1();
+        void switch_layout_2();
+
         void append_char(char ch);
         void delete_char();
 
