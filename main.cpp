@@ -134,7 +134,7 @@ public:
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
-    ui::push_new_state<ui::AnimationGallery>();
+    // ui::push_new_state<ui::AnimationGallery>();
 
     /*
     enable_stdio_to_usb();
