@@ -5,12 +5,11 @@
 #include <memory>
 
 #include <hardware/flash.h>
-#include <hardware/watchdog.h>
-#include <pico/flash.h>
-#include <pico/stdio.h>
 
 #include <badge/badge-2025.h>
 #include <utils/crc.hpp>
+
+#include "hardware/sync.h"
 
 namespace storage
 {
@@ -33,6 +32,17 @@ namespace storage
         };
 
         static_assert(sizeof(StorageUnit) == STORAGE_UNIT_SIZE);
+
+        struct DisableInterrupts {
+            DisableInterrupts() {
+                saved = save_and_disable_interrupts();
+            }
+            ~DisableInterrupts() {
+                restore_interrupts_from_disabled(saved);
+            }
+
+            uint32_t saved;
+        };
 
         constexpr intptr_t get_offset(int unit_index) {
             assert(unit_index >= 0 && unit_index < STORAGE_UNITS);
@@ -82,7 +92,8 @@ namespace storage
 
     void erase() {
         // Erase all FLASH space allocated to storage.
-        flash_safe_execute([](auto) { flash_range_erase(STORAGE_BASE_OFFSET, STORAGE_SIZE); }, nullptr, 500);
+        DisableInterrupts _guard{};
+        flash_range_erase(STORAGE_BASE_OFFSET, STORAGE_SIZE);
         // Reset RAM data to initial values.
         _ramUnit.data = {};
         // Pretend we loaded from the last unit, so that the next save writes to unit zero.
@@ -104,37 +115,25 @@ namespace storage
             target_unit = (target_unit + 1) % STORAGE_UNITS;
         }
 
-        // Make sure we do our actual FLASH modification in a safe state.
-        const auto status = flash_safe_execute(
-                [](auto param) {
-                    const auto unit = reinterpret_cast<int>(param);
-                    const auto offset = get_offset(unit);
-                    if (!is_erased(unit)) {
-                        printf("> Erase sector @ 0x%08x ...\n", offset);
-                        // We have already made sure that if we need to erase, it's on a sector boundary.
-                        assert((offset % FLASH_SECTOR_SIZE) == 0);
-                        flash_range_erase(offset, FLASH_SECTOR_SIZE);
-                    }
-                    // Program data to FLASH.
-                    flash_range_program(offset, reinterpret_cast<const uint8_t *>(&_ramUnit), STORAGE_UNIT_SIZE);
-                    // Clear previous unit by overwriting with zeroes.
-                    const auto zero_data = std::unique_ptr<uint8_t[]>(new uint8_t[STORAGE_UNIT_SIZE]);
-                    memset(zero_data.get(), 0, STORAGE_UNIT_SIZE);
-                    flash_range_program(get_offset(_currentUnit), zero_data.get(), STORAGE_UNIT_SIZE);
-                    _currentUnit = unit;
-                },
-                reinterpret_cast<void*>(target_unit),
-                1000);
+        DisableInterrupts _guard{};
 
-        if (status == PICO_OK) {
-            printf("> Data stored to FLASH unit %d\n", _currentUnit);
+        // Make sure we do our actual FLASH modification in a safe state.
+        const auto offset = get_offset(target_unit);
+        if (!is_erased(target_unit)) {
+            printf("> Erase sector @ 0x%08x ...\n", offset);
+            // We have already made sure that if we need to erase, it's on a sector boundary.
+            assert((offset % FLASH_SECTOR_SIZE) == 0);
+            flash_range_erase(offset, FLASH_SECTOR_SIZE);
         }
-        else {
-            printf("> Error occurred when saving to FLASH (%d)\n", status);
-            printf("> Forcing a reboot...\n\n");
-            stdio_flush();
-            watchdog_reboot(0, 0, 10);
-        }
+        // Program data to FLASH.
+        flash_range_program(offset, reinterpret_cast<const uint8_t *>(&_ramUnit), STORAGE_UNIT_SIZE);
+        // Clear previous unit by overwriting with zeroes.
+        const auto zero_data = std::unique_ptr<uint8_t[]>(new uint8_t[STORAGE_UNIT_SIZE]);
+        memset(zero_data.get(), 0, STORAGE_UNIT_SIZE);
+        flash_range_program(get_offset(_currentUnit), zero_data.get(), STORAGE_UNIT_SIZE);
+        _currentUnit = target_unit;
+
+        printf("> Data stored to FLASH unit %d\n", _currentUnit);
     }
 
 } // namespace storage

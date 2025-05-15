@@ -55,8 +55,6 @@ add_executable(${TARGET}
         badge/drawing.cpp
         badge/lcd.cpp
         badge/storage.cpp
-        core/core1.cpp
-        core/irq.cpp
         fs/msc.cpp
         ui/state.cpp
         ui/ui.cpp
@@ -163,15 +161,12 @@ target_link_libraries(${TARGET}
         hardware_rtc
         hardware_spi
         hardware_structs
-        hardware_sync
-        hardware_sync_spin_lock
         hardware_timer
         hardware_uart
         pico_aon_timer
         pico_base_headers
         pico_bootsel_via_double_reset
         pico_flash
-        pico_multicore
         pico_platform
         pico_platform_compiler
         pico_platform_panic

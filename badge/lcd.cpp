@@ -11,12 +11,15 @@
 #include <pico/stdlib.h>
 
 #define WRITE_VALUE(name, value) gpio_put(name, (value) ? 1 : 0)
-#define WRITE_HIGH(name) WRITE_VALUE(name, true)
-#define WRITE_LOW(name) WRITE_VALUE(name, false)
+#define WRITE_HIGH(name)         WRITE_VALUE(name, true)
+#define WRITE_LOW(name)          WRITE_VALUE(name, false)
 
 #define READ_VALUE(name) gpio_get(name)
 
-#define LCD_SPI_DELAY() do{ asm volatile ("nop"); }while(0)
+#define LCD_SPI_DELAY()                                                                                                \
+    do {                                                                                                               \
+        asm volatile("nop");                                                                                           \
+    } while (0)
 
 namespace lcd::internal
 {
@@ -31,8 +34,17 @@ namespace lcd::internal
 
     bool _inDoomMode = false;
 
+    bool _dmaActive = true;
+
     void wait_for_spi() {
-        while (spi_is_busy(LCD_SPI_PORT)) asm("nop");
+        if (_dmaActive) {
+            dma_channel_wait_for_finish_blocking(txDmaChannel);
+            spi_set_format(LCD_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+            deselect();
+            _dmaActive = false;
+        }
+        while (spi_is_busy(LCD_SPI_PORT))
+            asm("nop");
     }
 
     void dir_out() {
@@ -58,7 +70,6 @@ namespace lcd::internal
     }
 
     void deselect() {
-        wait_for_spi();
         WRITE_HIGH(LCD_CS_PIN);
     }
 
@@ -81,28 +92,20 @@ namespace lcd::internal
         }
     }
 
-    void write(const void* data, int n_bytes) {
+    void write(const void *data, int n_bytes) {
         dir_out();
-        const auto   ptr = static_cast<const uint8_t *>(data);
+        const auto ptr = static_cast<const uint8_t *>(data);
         const int n = spi_write_blocking(LCD_SPI_PORT, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::write(..., %d) wrote %d bytes\n", n_bytes, n);
         }
     }
 
-    void write_dma16(const void* data, int n_bytes) {
+    void write_dma16(const void *data, int n_bytes) {
         dir_out();
         spi_set_format(LCD_SPI_PORT, 16, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
-        dma_channel_configure(
-            txDmaChannel,
-            &txDmaConfig,
-            &spi_get_hw(LCD_SPI_PORT)->dr,
-            data,
-            n_bytes / 2,
-            true
-        );
-        dma_channel_wait_for_finish_blocking(txDmaChannel);
-        spi_set_format(LCD_SPI_PORT, 8, SPI_CPOL_0, SPI_CPHA_0, SPI_MSB_FIRST);
+        _dmaActive = true;
+        dma_channel_configure(txDmaChannel, &txDmaConfig, &spi_get_hw(LCD_SPI_PORT)->dr, data, n_bytes / 2, true);
     }
 
     void begin_read_sequence() {
@@ -110,10 +113,11 @@ namespace lcd::internal
         // Lower baud rate?
     }
 
-    void read(void* buffer, int n_bytes, bool dummy_first) {
+    void read(void *buffer, int n_bytes, bool dummy_first) {
         dir_in();
-        if (dummy_first) clock_cycle();
-        const auto ptr = static_cast<uint8_t*>(buffer);
+        if (dummy_first)
+            clock_cycle();
+        const auto ptr = static_cast<uint8_t *>(buffer);
         const int n = spi_read_blocking(LCD_SPI_PORT, 0, ptr, n_bytes);
         if (n != n_bytes) {
             printf("! lcd::read(..., %d, %d) read %d bytes\n", n_bytes, dummy_first, n);
@@ -126,6 +130,7 @@ namespace lcd::internal
     }
 
     void simple_cmd(Command cmd) {
+        wait_for_spi();
         select_command();
         write(cmd);
         deselect();
@@ -133,6 +138,7 @@ namespace lcd::internal
 
     template<typename T = uint8_t>
     void simple_cmd_write(Command cmd, const T &data) {
+        wait_for_spi();
         select_command();
         write(cmd);
         select_data();
@@ -148,7 +154,7 @@ namespace lcd::internal
         write(cmd);
         // Read data.
         select_data();
-        T result = { };
+        T result = {};
         read(&result, sizeof(result), sizeof(T) > 1);
         // Need extra trailing clock cycle.
         clock_cycle();
@@ -159,23 +165,25 @@ namespace lcd::internal
         return result;
     }
 
+} // namespace lcd::internal
+
+namespace lcd
+{
+    using namespace internal;
+
     void init() {
         printf("> lcd::init ");
-        
+
         const auto baud = spi_init(LCD_SPI_PORT, SPI_FREQ);
         printf(" (%d.%d MHz) ", baud / 1'000'000, (baud / 100'000) % 10);
 
         gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
         gpio_set_function(LCD_SPI_OUT_PIN, GPIO_FUNC_SPI);
-        gpio_set_function(LCD_SPI_IN_PIN,  GPIO_FUNC_SPI);
+        gpio_set_function(LCD_SPI_IN_PIN, GPIO_FUNC_SPI);
 
-        uint32_t sio_mask 
-            = (1 << LCD_SPI_DIR_PIN)
-            | (1 << LCD_CS_PIN)
-            | (1 << LCD_DCX_PIN)
-            | (1 << LCD_LED_PIN)
-            | (1 << LCD_NRST_PIN);
-        
+        uint32_t sio_mask = (1 << LCD_SPI_DIR_PIN) | (1 << LCD_CS_PIN) | (1 << LCD_DCX_PIN) | (1 << LCD_LED_PIN) |
+                            (1 << LCD_NRST_PIN);
+
         gpio_set_function_masked(sio_mask, GPIO_FUNC_SIO);
         gpio_set_dir_out_masked(sio_mask);
         gpio_put_masked(sio_mask, sio_mask);
@@ -190,6 +198,12 @@ namespace lcd::internal
         backlight_off();
 
         reset();
+        exit_sleep();
+        display_on();
+        read_id();
+        read_status();
+
+        backlight_on(20);
     }
 
     void reset() {
@@ -218,14 +232,16 @@ namespace lcd::internal
         simple_cmd_write(CMD_ROW_ADDRESS, Address(ROW_OFFSET, HEIGHT + ROW_OFFSET - 1));
 
         if (_onScreenFrame == nullptr)
-            _onScreenFrame = reinterpret_cast<Pixel*>(_frameBufferBlob);
+            _onScreenFrame = reinterpret_cast<Pixel *>(_frameBufferBlob);
 
         if (_offScreenFrame == nullptr)
-            _offScreenFrame = reinterpret_cast<Pixel*>(_frameBufferBlob + FRAME_SIZE);
+            _offScreenFrame = reinterpret_cast<Pixel *>(_frameBufferBlob + FRAME_SIZE);
 
         memset(_onScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
         memset(_offScreenFrame, 0, WIDTH * HEIGHT * sizeof(Pixel));
-        end_swap(); // This should make the entire screen red until something else is written to it.
+
+        swap();
+        wait_for_spi();
 
         printf("OK\n");
     }
@@ -242,38 +258,31 @@ namespace lcd::internal
 
     DisplayStatus read_status() {
         printf("> Read Status...\n");
-        const auto status = simple_cmd_read<DisplayStatus>(
-                CMD_READ_DISPLAY_STATUS);
+        const auto status = simple_cmd_read<DisplayStatus>(CMD_READ_DISPLAY_STATUS);
         //
         printf("  Display      : %s\n", status.display_on ? "On" : "Off");
         printf("  Booster      : %s\n", status.booster_on ? "On" : "Off");
         printf("  Idle Mode    : %s\n", status.idle_on ? "On" : "Off");
         printf("  Partial Mode : %s\n", status.partial_on ? "On" : "Off");
         printf("  Sleep Mode   : %s\n", status.sleep_out ? "Out" : "In");
-        printf("  Display Mode : %s\n",
-                status.normal_on ? "Normal" : "Partial");
+        printf("  Display Mode : %s\n", status.normal_on ? "Normal" : "Partial");
         printf("  Inversion    : %s\n", status.inversion_on ? "On" : "Off");
         printf("  Tear Effect  : %s\n", status.tear_on ? "On" : "Off");
-        printf("  Tear Mode    : %s\n",
-                status.tear_mode ? "mode1" : "mode2");
+        printf("  Tear Mode    : %s\n", status.tear_mode ? "mode1" : "mode2");
         printf("  Gamma Curve  : %d\n", status.gamma_curve);
         //
-        printf("  Row Order    : %s\n",
-                status.row_order ? "Bottom to Top" : "Top to Bottom");
-        printf("  Col Order    : %s\n",
-                status.col_order ? "Right to Left" : "Left to Right");
-        printf("  Exchange     : %s\n",
-                status.row_col_exch ? "Row/Col Exchanged" : "Normal");
-        printf("  Scan Order   : %s\n",
-                status.scan_order ? "Bottom to Top" : "Top to Bottom");
-        printf("  H. Order     : %s\n",
-                status.horiz_order ? "Right to Left" : "Left to Right");
+        printf("  Row Order    : %s\n", status.row_order ? "Bottom to Top" : "Top to Bottom");
+        printf("  Col Order    : %s\n", status.col_order ? "Right to Left" : "Left to Right");
+        printf("  Exchange     : %s\n", status.row_col_exch ? "Row/Col Exchanged" : "Normal");
+        printf("  Scan Order   : %s\n", status.scan_order ? "Bottom to Top" : "Top to Bottom");
+        printf("  H. Order     : %s\n", status.horiz_order ? "Right to Left" : "Left to Right");
         //
         printf("  RGB Order    : %s\n", status.rgb_order ? "BGR" : "RGB");
         printf("  Pixel Fmt    : %s\n",
-                status.if_pixel_fmt == IPF_12BPP_4_4_4 ? "4-4-4" :
-                status.if_pixel_fmt == IPF_16BPP_5_6_5 ? "5-6-5" :
-                status.if_pixel_fmt == IPF_18BPP_6_6_6 ? "6-6-6" : "Invalid");
+               status.if_pixel_fmt == IPF_12BPP_4_4_4   ? "4-4-4"
+               : status.if_pixel_fmt == IPF_16BPP_5_6_5 ? "5-6-5"
+               : status.if_pixel_fmt == IPF_18BPP_6_6_6 ? "6-6-6"
+                                                        : "Invalid");
         printf("\n");
         return status;
     }
@@ -317,30 +326,10 @@ namespace lcd::internal
         simple_cmd_write<uint8_t>(CMD_GAMMA_SET, 1 << (idx & 3));
     }
 
-    void begin_swap() {
-        const auto tmp = _onScreenFrame;
-        _onScreenFrame = _offScreenFrame;
-        _offScreenFrame = tmp;
-    }
-
-    void end_swap() {
-        select_command();
-        write(CMD_MEMORY_WRITE);
-        select_data();
-        write_dma16(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
-        deselect();
-    }
-
-}
-
-namespace lcd {
-    using namespace internal;
-
     void backlight_on(int pct) {
         printf("> Backlight On %d%%...\n", pct);
         if (pct <= 0) {
             backlight_off();
-            return;
         }
         else if (pct >= 100) {
             auto pwm_slice = pwm_gpio_to_slice_num(LCD_LED_PIN);
@@ -365,13 +354,23 @@ namespace lcd {
         gpio_put(LCD_LED_PIN, true);
     }
 
-    Pixel* get_offscreen_ptr_unsafe() {
-        return _offScreenFrame;
+    Pixel *get_offscreen_ptr_unsafe() { return _offScreenFrame; }
+
+    void swap() {
+        const auto tmp = _onScreenFrame;
+        _onScreenFrame = _offScreenFrame;
+        _offScreenFrame = tmp;
+
+        wait_for_spi();
+        select_command();
+        write(CMD_MEMORY_WRITE);
+        select_data();
+        write_dma16(_onScreenFrame, sizeof(Pixel) * WIDTH * HEIGHT);
     }
 
-}
+} // namespace lcd
 
-extern "C" uint8_t* lcd_change_to_doom_mode() {
+extern "C" uint8_t *lcd_change_to_doom_mode() {
     // The DOOM engine wants a bunch of memory for screen buffers. So to let it have that we change how we render
     // to the LCD (DOOM uses an 8-bit palette instead of 16-bit color buffer) and let the DOOM engine have our
     // frame buffer blob.

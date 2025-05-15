@@ -146,33 +146,27 @@ namespace lcd
     static_assert(sizeof(DisplayStatus) == 4);
     static_assert(sizeof(Address) == 4);
 
-    namespace internal
-    {
+    void init();
+    void reset();
 
-        void init();
-        void reset();
+    DisplayID     read_id();
+    DisplayStatus read_status();
 
-        DisplayID     read_id();
-        DisplayStatus read_status();
+    void enter_sleep();
+    void exit_sleep();
 
-        void enter_sleep();
-        void exit_sleep();
+    void display_on();
+    void display_off();
 
-        void display_on();
-        void display_off();
-
-        void set_idle_mode(bool enabled);
-        void set_inversion(bool enabled);
-        void set_gamma(int idx);
-
-        void begin_swap();
-        void end_swap();
-
-    } // namespace internal
+    void set_idle_mode(bool enabled);
+    void set_inversion(bool enabled);
+    void set_gamma(int idx);
 
     void backlight_on(int pct);
     void backlight_off();
 
     Pixel *get_offscreen_ptr_unsafe();
+
+    void swap();
 
 } // namespace lcd

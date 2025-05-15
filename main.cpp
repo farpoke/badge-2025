@@ -13,7 +13,6 @@
 #include <badge/factory_test.hpp>
 #include <badge/font.hpp>
 #include <badge/storage.hpp>
-#include <core/core1.hpp>
 #include <games/blocks.hpp>
 #include <games/flappy.hpp>
 #include <games/othello.hpp>
@@ -109,12 +108,10 @@ public:
 
     usb::init();
     buttons::init();
-
-    core1::reset_and_launch();
+    storage::init();
+    lcd::init();
 
     disable_pwr_leds();
-
-    storage::init();
 
 #if !FACTORY_TEST
 
@@ -171,7 +168,7 @@ public:
 
         last_frame_time = now;
 
-        core1::swap_frame();
+        lcd::swap();
 
         buttons::update();
 
