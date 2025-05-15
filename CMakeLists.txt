@@ -48,30 +48,16 @@ project(${TARGET} C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK.
 pico_sdk_init()
 
-# Create target executable with our sources.
+# Create target executable with our minimum sources.
 add_executable(${TARGET}
         main.cpp
-        badge/animation.cpp
         badge/buttons.cpp
         badge/drawing.cpp
-        badge/flags.cpp
-        badge/font.cpp
         badge/lcd.cpp
         badge/storage.cpp
         core/core1.cpp
         core/irq.cpp
-        fs/fs.cpp
         fs/msc.cpp
-        games/blocks.cpp
-        games/flappy.cpp
-        games/othello.cpp
-        games/snek.cpp
-        ui/animations.cpp
-        ui/code_entry.cpp
-        ui/menu.cpp
-        ui/qr_code.cpp
-        ui/readme.cpp
-        ui/splash.cpp
         ui/state.cpp
         ui/ui.cpp
         usb/stdio_driver.cpp
@@ -83,6 +69,45 @@ target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/usb
 )
+
+# Add the option of producing a smaller "factory test" version.
+set(FACTORY_TEST OFF CACHE BOOL "Build factory test firmware")
+
+if(FACTORY_TEST)
+
+    # Add the factory test source file and set the macro to one.
+    target_sources(${TARGET} PRIVATE badge/factory_test.cpp)
+    target_compile_definitions(${TARGET} PRIVATE FACTORY_TEST=1)
+
+else()
+
+    # Set the factory test macro to zero.
+    target_compile_definitions(${TARGET} PRIVATE FACTORY_TEST=0)
+
+    # Add our non-required sources.
+    target_sources(${TARGET} PRIVATE
+            main.cpp
+            badge/animation.cpp
+            badge/flags.cpp
+            badge/font.cpp
+            fs/fs.cpp
+            games/blocks.cpp
+            games/flappy.cpp
+            games/othello.cpp
+            games/snek.cpp
+            ui/animations.cpp
+            ui/code_entry.cpp
+            ui/menu.cpp
+            ui/qr_code.cpp
+            ui/readme.cpp
+            ui/splash.cpp
+    )
+
+    # Include our assets and add them to our target.
+    add_subdirectory(assets)
+    target_link_libraries(${TARGET} assets)
+
+endif()
 
 target_compile_definitions(${TARGET} PUBLIC
         # Use all 8 KiB of "scratch" memory for the core0 stack.
@@ -158,10 +183,6 @@ target_link_libraries(${TARGET}
         pico_util
         tinyusb_device
 )
-
-# Include our assets and add them to our target.
-add_subdirectory(assets)
-target_link_libraries(${TARGET} assets)
 
 # Add in our DOOM port.
 # add_subdirectory(doom)

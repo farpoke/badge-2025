@@ -1,4 +1,4 @@
-#include <assets.hpp>
+
 #include <cmath>
 #include <cstdio>
 
@@ -10,6 +10,7 @@
 
 #include <badge/buttons.hpp>
 #include <badge/drawing.hpp>
+#include <badge/factory_test.hpp>
 #include <badge/font.hpp>
 #include <badge/storage.hpp>
 #include <core/core1.hpp>
@@ -82,8 +83,7 @@ public:
     }
 
     void draw() override {
-        drawing::draw_image(0, 0, image::splash_bg);
-        drawing::fill_rect(0, 0, lcd::WIDTH, lcd::HEIGHT, COLOR_BLACK, 150);
+        drawing::clear(COLOR_BLACK);
 
         auto x = 2;
         auto y = 2;
@@ -116,6 +116,8 @@ public:
 
     storage::init();
 
+#if !FACTORY_TEST
+
     const auto menu = ui::make_state<ui::MainMenu>();
     menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Website", ui::make_state<Website>());
@@ -133,6 +135,12 @@ public:
 
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
+
+#else
+
+    ui::push_new_state<factory::FactoryTest>();
+
+#endif
 
     // ui::push_new_state<ui::AnimationGallery>();
 

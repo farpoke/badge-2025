@@ -17,10 +17,14 @@ namespace storage
 
     struct StorageData {
 
-        char entered_flags[flags::FLAG_COUNT][flags::MAX_FLAG_LENGTH] = {};
+        uint32_t factory_test_result = 0;
 
         int snek_highscore = 0;
         int blocks_highscore = 0;
+
+        int reserved[29] = {};
+
+        char entered_flags[flags::FLAG_COUNT][flags::MAX_FLAG_LENGTH] = {};
 
     };
 

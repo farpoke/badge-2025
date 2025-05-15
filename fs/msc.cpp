@@ -2,7 +2,13 @@
 
 #include <tusb.h>
 
+#if !FACTORY_TEST
 #include <assets.hpp>
+#else
+static constexpr uint32_t DISK_IMAGE_BLOCK_COUNT = 0;
+static constexpr uint32_t DISK_IMAGE_SIZE = 0;
+static constexpr uint8_t *DISK_IMAGE = nullptr;
+#endif
 
 static bool ejected = false;
 
