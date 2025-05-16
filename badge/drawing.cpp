@@ -227,6 +227,11 @@ namespace drawing
         fill_rect(x + render.dx, y + render.dy, render.width, render.height, fg, render.alpha.get());
     }
 
+    void draw_text(int x, int y, std::string_view text, Pixel fg, const font::Font &font) {
+        const auto render = font.render(text);
+        fill_rect(x + render.dx, y + render.dy, render.width, render.height, fg, render.alpha.get());
+    }
+
     void draw_text_centered(int x, int y, std::string_view text, Pixel fg, const font::Font &font) {
         const auto render = font.render(text);
         fill_rect(x - render.width / 2, y + render.dy, render.width, render.height, fg, render.alpha.get());

@@ -35,7 +35,7 @@ namespace blocks
                 shift_left();
             else if (buttons::right())
                 shift_right();
-            else if (buttons::up())
+            else if (buttons::up() || buttons::d())
                 hard_drop();
             else if (buttons::down_current()) {
                 if (fall_timer >= SOFT_DROP_INTERVAL_MS)
@@ -45,10 +45,17 @@ namespace blocks
                 rotate_cw();
             else if (buttons::b())
                 hold();
+            else if (buttons::c())
+                rotate_ccw();
+
+            if (!buttons::down_current())
+                soft_drop_count = 0;
         }
         else if (state == GAME_OVER) {
-            if (buttons::a())
+            if (buttons::a()) {
                 reset();
+                state = PLAYING;
+            }
             else if (buttons::b())
                 ui::pop_state();
         }
@@ -56,9 +63,36 @@ namespace blocks
 
     void BlocksGame::draw() {
         drawing::clear(COLOR_BLACK);
+
         draw_field();
         draw_queue();
         draw_held();
+
+        if (state == WAITING_TO_START || state == GAME_OVER) {
+            drawing::fill_rect(10, 50, 140, 50, COLOR_BLACK, 220);
+            drawing::draw_rect(10, 50, 140, 50, COLOR_WHITE);
+            const auto press = font::m6x11.render("Press ");
+            drawing::draw_text(20, 70, 0, 0, COLOR_WHITE, press);
+            drawing::draw_image(20 + press.width,
+                                70 + press.dy + (press.height - image::button_a.height) / 2,
+                                image::button_a);
+            drawing::draw_text(20, 90, 0, 0, COLOR_WHITE, press);
+            drawing::draw_image(20 + press.width,
+                                90 + press.dy + (press.height - image::button_b.height) / 2,
+                                image::button_b);
+            const auto to_restart = font::m6x11.render(" to start");
+            drawing::draw_text(20 + press.width + image::button_a.width, 70, 0, 0, COLOR_WHITE, to_restart);
+            const auto to_exit = font::m6x11.render(" to exit");
+            drawing::draw_text(20 + press.width + image::button_b.width, 90, 0, 0, COLOR_WHITE, to_exit);
+        }
+
+        if (state != WAITING_TO_START) {
+            drawing::draw_text(FIELD_PX_LEFT + FIELD_WIDTH * TILE_SIZE + 5, FIELD_PX_BOTTOM - 20, "Score:", COLOR_WHITE, font::m6x11);
+            char buffer[32];
+            int n = snprintf(buffer, sizeof(buffer), "%d", score);
+            std::string text(buffer, n);
+            drawing::draw_text(FIELD_PX_LEFT + FIELD_WIDTH * TILE_SIZE + 5, FIELD_PX_BOTTOM - 5, text, COLOR_WHITE, font::m6x11);
+        }
     }
 
     void BlocksGame::pause() {}
@@ -80,6 +114,7 @@ namespace blocks
         state = WAITING_TO_START;
         fall_interval = INITIAL_FALL_INTERVAL_MS;
         score = 0;
+        level = 1;
 
         // Spawn in the first piece. This will also reset current piece and queue.
         spawn_next();
@@ -100,6 +135,7 @@ namespace blocks
         current_rotation = 0;
         hold_used = false;
         fall_timer = 0;
+        last_move_was_spin = false;
 
         update_ghost_row();
 
@@ -132,17 +168,29 @@ namespace blocks
     void BlocksGame::fall() {
         if (try_place_piece(current_piece_row - 1, current_piece_col, current_piece, current_rotation)) {
             current_piece_row--;
+            last_move_was_spin = false;
             update_ghost_row();
         }
         else {
             hard_drop();
         }
         fall_timer = 0;
+        soft_drop_count++;
     }
 
     void BlocksGame::hard_drop() {
         update_ghost_row();
 
+        int bonus_score = 0;
+
+        // Add hard drop bonus score.
+        if (current_piece_row > ghost_row)
+            bonus_score += 2 * (current_piece_row - ghost_row);
+
+        // Add soft drop bonus score.
+        bonus_score += soft_drop_count;
+
+        // Place piece onto the field.
         for (int u = 0; u < 4; u++) {
             for (int v = 0; v < 4; v++) {
                 if (!BLOCK_DATA[current_piece][current_rotation][u][v])
@@ -155,6 +203,26 @@ namespace blocks
             }
         }
 
+        // If we dropped a T piece, figure out if this was a valid T-spin.
+        bool t_spin = false;
+        if (current_piece == PIECE_T && last_move_was_spin) {
+            int t_spin_count = 0;
+            std::array coords = {
+                    std::pair{ghost_row, current_piece_col},
+                    std::pair{ghost_row, current_piece_col + 2},
+                    std::pair{ghost_row + 2, current_piece_col},
+                    std::pair{ghost_row + 2, current_piece_col + 2},
+            };
+            for (const auto &[r, c] : coords) {
+                if (r < 0 || r >= FIELD_HEIGHT || c < 0 || c >= FIELD_WIDTH || field[r][c] != EMPTY)
+                    t_spin_count++;
+            }
+            if (t_spin_count >= 3)
+                t_spin = true;
+        }
+
+        // Count and remove cleared rows.
+        int n_cleared = 0;
         for (int r = 0; r < FIELD_HEIGHT; r++) {
             bool filled = true;
             for (int c = 0; c < FIELD_WIDTH; c++) {
@@ -163,43 +231,76 @@ namespace blocks
                     break;
                 }
             }
-            if (!filled) continue;
+            if (!filled)
+                continue;
             for (int r2 = r; r2 < FIELD_HEIGHT - 1; r2++) {
                 for (int c = 0; c < FIELD_WIDTH; c++)
-                    field[r2][c] = field[r2+1][c];
+                    field[r2][c] = field[r2 + 1][c];
             }
-            score += 100;
+            n_cleared++;
             r--;
         }
 
+        // Add score.
+        if (n_cleared > 0)
+            score += bonus_score;
+        if (t_spin) {
+            if (n_cleared == 0)
+                score += 100 * level;
+            else if (n_cleared == 1)
+                score += 200 * level;
+            else if (n_cleared == 2)
+                score += 400 * level;
+            else if (n_cleared == 3)
+                score += 800 * level;
+        }
+        else {
+            if (n_cleared == 1)
+                score += 100 * level;
+            else if (n_cleared == 2)
+                score += 300 * level;
+            else if (n_cleared == 3)
+                score += 500 * level;
+            else if (n_cleared == 4)
+                score += 800 * level;
+        }
+
+        // Spawn the next piece.
         spawn_next();
     }
 
     void BlocksGame::shift_left() {
-        if (try_place_piece(current_piece_row, current_piece_col - 1, current_piece, current_rotation))
+        if (try_place_piece(current_piece_row, current_piece_col - 1, current_piece, current_rotation)) {
             current_piece_col--;
-        update_ghost_row();
+            last_move_was_spin = false;
+            update_ghost_row();
+        }
     }
 
     void BlocksGame::shift_right() {
-        if (try_place_piece(current_piece_row, current_piece_col + 1, current_piece, current_rotation))
+        if (try_place_piece(current_piece_row, current_piece_col + 1, current_piece, current_rotation)) {
             current_piece_col++;
-        update_ghost_row();
+            last_move_was_spin = false;
+            update_ghost_row();
+        }
     }
 
     void BlocksGame::rotate_cw() {
         if (current_piece == PIECE_O)
             return;
         const int new_rotation = (current_rotation + 1) % 4;
-        if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation))
+        if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation)) {
             current_rotation = new_rotation;
+            last_move_was_spin = true;
+        }
         else {
             const auto &[cw_kicks, _] = (current_piece == PIECE_I) ? I_KICK_DATA : JLTSZ_KICK_DATA;
-            for (const auto& [dx, dy] : cw_kicks[current_rotation]) {
+            for (const auto &[dx, dy] : cw_kicks[current_rotation]) {
                 if (try_place_piece(current_piece_row + dy, current_piece_col + dx, current_piece, new_rotation)) {
                     current_rotation = new_rotation;
                     current_piece_col += dx;
                     current_piece_row += dy;
+                    last_move_was_spin = true;
                     break;
                 }
             }
@@ -211,15 +312,18 @@ namespace blocks
         if (current_piece == PIECE_O)
             return;
         const int new_rotation = (current_rotation + 3) % 4;
-        if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation))
+        if (try_place_piece(current_piece_row, current_piece_col, current_piece, new_rotation)) {
             current_rotation = new_rotation;
+            last_move_was_spin = true;
+        }
         else {
             const auto &[_, ccw_kicks] = (current_piece == PIECE_I) ? I_KICK_DATA : JLTSZ_KICK_DATA;
-            for (const auto& [dx, dy] : ccw_kicks[current_rotation]) {
+            for (const auto &[dx, dy] : ccw_kicks[current_rotation]) {
                 if (try_place_piece(current_piece_row + dy, current_piece_col + dx, current_piece, new_rotation)) {
                     current_rotation = new_rotation;
                     current_piece_col += dx;
                     current_piece_row += dy;
+                    last_move_was_spin = true;
                     break;
                 }
             }

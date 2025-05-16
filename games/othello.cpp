@@ -190,6 +190,14 @@ namespace othello
             else if (buttons::a() || buttons::push())
                 attempt_play();
         }
+
+        else if (state == GS_ILLEGAL_MOVE) {
+            animation_timer += delta_ms;
+            if (animation_timer >= 500) {
+                state = GS_WAITING_ON_PLAYER;
+                animation_timer = animation_counter = 0;
+            }
+        }
     }
 
     void OthelloGame::draw() {
@@ -223,7 +231,8 @@ namespace othello
         }
 
         // Draw the cursor.
-        const auto &cursor_image = animation_counter == 0 ? image::cursor_anim1 : image::cursor_anim2;
+        const auto &cursor_image =
+            state == GS_ILLEGAL_MOVE ? image::red_x : (animation_counter == 0 ? image::cursor_anim1 : image::cursor_anim2);
         drawing::draw_image(BOARD_LEFT + cursor_col * TILE_SIZE + PIECE_OFFSET,
                             BOARD_TOP + cursor_row * TILE_SIZE + PIECE_OFFSET,
                             cursor_image);

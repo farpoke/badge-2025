@@ -125,8 +125,8 @@ ui::StatePtr create_main_menu() {
     menu->add_item("Website", ui::make_state<Website>());
     menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
     menu->add_item("Found Flags", ui::make_state<ui::FlagView>());
-    menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
     menu->add_item("Snek", ui::make_state<snek::SnekGame>());
+    menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
     menu->add_item("Othello", ui::make_state<othello::OthelloGame>());
     // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
     menu->add_item("Gallery", create_gallery_menu());

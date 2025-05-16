@@ -41,6 +41,7 @@ namespace drawing
     void fill_alpha(int left, int top, Pixel color, const Image &mask);
 
     void draw_text(int x, int y, Pixel bg, uint8_t bg_alpha, Pixel fg, const TextDraw &render);
+    void draw_text(int x, int y, std::string_view text, Pixel fg, const font::Font& font);
     void draw_text_centered(int x, int y, std::string_view text, Pixel fg, const font::Font &font);
 
 } // namespace drawing

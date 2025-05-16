@@ -41,14 +41,15 @@ into itself, after which you may press (A) to try again, or (B) to exit.
 
 This is a legally distinct implementation of the classic game of Tetris. An
 attempt has been made to follow the Tetris Guidelines and SRS standard, but it
-might not be perfect and some features (such as sound effects) are missing by
-necessity.
+isn't perfect and some features (such as sound effects) are missing by necessity.
 
 
 
 # Othello
 
-The game of Othello, also known as Reversi.
+The game of Othello, also known as Reversi. This implementation is very simple:
+press up / down / left / right to move the cursor, (A) to play, and (B) to
+exit.
 
 
 

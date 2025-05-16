@@ -106,8 +106,15 @@ namespace blocks
         int fall_timer    = 0; ///< Timer counting up in milliseconds from when the current piece fell one tile.
         int fall_interval = 0; ///< Current interval between falls.
 
+        int soft_drop_count = 0; ///< Count how many spaces the current piece has been soft-dropped, for scoring.
+
+        bool last_move_was_spin = false; ///< Keep track of if the last successful move was a spin, for T-spin scoring.
+
         /// Current game score.
         int score = 0;
+
+        /// Current level.
+        int level = 0;
 
         /// Reset everything to a new initial state.
         void reset();
