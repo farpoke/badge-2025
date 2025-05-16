@@ -10,15 +10,15 @@
 namespace ui
 {
 
-    void MainMenu::add_item(std::string_view label, const StatePtr &target_state) {
+    void Menu::add_item(std::string_view label, const StatePtr &target_state) {
         items.emplace_back(label, target_state);
     }
 
-    void MainMenu::add_item(std::string_view label, Callback callback) {
+    void Menu::add_item(std::string_view label, Callback callback) {
         items.emplace_back(label, callback);
     }
 
-    void MainMenu::update(int delta_ms) {
+    void Menu::update(int delta_ms) {
         State::update(delta_ms);
 
         if (target_offset == 0) {
@@ -47,9 +47,12 @@ namespace ui
         else if (buttons::up()) {
             selected_item = (selected_item + items.size() - 1) % items.size();
         }
+        else if (buttons::b() && !is_main) {
+            pop_state();
+        }
     }
 
-    void MainMenu::draw() {
+    void Menu::draw() {
         drawing::clear(COLOR_BLACK);
         // drawing::draw_image(10, 10, image::triangle_right);
 

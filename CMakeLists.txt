@@ -94,7 +94,7 @@ else()
             games/flappy.cpp
             games/othello.cpp
             games/snek.cpp
-            ui/animations.cpp
+            ui/animation.cpp
             ui/code_entry.cpp
             ui/flag_view.cpp
             ui/menu.cpp

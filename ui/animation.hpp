@@ -2,11 +2,14 @@
 
 #include "state.hpp"
 
+#include <badge/animation.hpp>
+
 namespace ui
 {
 
-    class AnimationGallery final : public State {
+    class Animation final : public State {
     public:
+        explicit Animation(anim::Animation* anim) : anim(anim) {}
 
         void update(int delta_ms) override;
         void draw() override;
@@ -15,6 +18,7 @@ namespace ui
         void resume() override;
 
     private:
+        anim::Animation* anim;
 
     };
 

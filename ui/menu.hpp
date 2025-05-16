@@ -8,7 +8,7 @@
 namespace ui
 {
 
-    class MainMenu final : public State {
+    class Menu final : public State {
     public:
         typedef void (*Callback)();
 
@@ -17,6 +17,8 @@ namespace ui
 
         void update(int delta_ms) override;
         void draw() override;
+
+        bool is_main = false;
 
     protected:
         struct Item {

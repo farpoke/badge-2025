@@ -8,6 +8,8 @@
 
 #include <tusb.h>
 
+#include <assets.hpp>
+
 #include <badge/buttons.hpp>
 #include <badge/drawing.hpp>
 #include <badge/factory_test.hpp>
@@ -17,7 +19,7 @@
 #include <games/flappy.hpp>
 #include <games/othello.hpp>
 #include <games/snek.hpp>
-#include <ui/animations.hpp>
+#include <ui/animation.hpp>
 #include <ui/code_entry.hpp>
 #include <ui/flag_view.hpp>
 #include <ui/menu.hpp>
@@ -103,6 +105,40 @@ public:
     }
 };
 
+ui::StatePtr create_gallery_menu() {
+    auto menu = ui::make_state<ui::Menu>();
+    menu->add_item("Blahaj", ui::make_state<ui::Animation>(&anim::blahaj_spin));
+    menu->add_item("Dramatic", ui::make_state<ui::Animation>(&anim::dramatic));
+    menu->add_item("Fire", ui::make_state<ui::Animation>(&anim::fire));
+    menu->add_item("Hi There", ui::make_state<ui::Animation>(&anim::hi_there));
+    menu->add_item("Pedro", ui::make_state<ui::Animation>(&anim::pedro));
+    menu->add_item("Rap Win", ui::make_state<ui::Animation>(&anim::rap_win));
+    menu->add_item("gbgay{", ui::make_state<ui::Animation>(&anim::rick));
+    return menu;
+}
+
+ui::StatePtr create_main_menu() {
+
+    auto menu = ui::make_state<ui::Menu>();
+    menu->is_main = true;
+    menu->add_item("README", ui::make_state<ui::Readme>());
+    menu->add_item("Website", ui::make_state<Website>());
+    menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
+    menu->add_item("Found Flags", ui::make_state<ui::FlagView>());
+    menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
+    menu->add_item("Snek", ui::make_state<snek::SnekGame>());
+    menu->add_item("Othello", ui::make_state<othello::OthelloGame>());
+    // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
+    menu->add_item("Gallery", create_gallery_menu());
+    // menu->add_item("GPIO Control", nullptr);
+    // menu->add_item("SAO Control", nullptr);
+    // menu->add_item("Font Test", ui::make_state<FontTest>());
+    menu->add_item("Bootloader", [] { rom_reset_usb_boot_extra(-1, 0, false); });
+
+    return menu;
+
+}
+
 [[noreturn]] int main() {
     stdio_init_all();
     printf("\n===== HackGBGay 2025 =====\n");
@@ -117,21 +153,7 @@ public:
 
 #if !FACTORY_TEST
 
-    const auto menu = ui::make_state<ui::MainMenu>();
-    menu->add_item("README", ui::make_state<ui::Readme>());
-    menu->add_item("Website", ui::make_state<Website>());
-    menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
-    menu->add_item("Found Flags", ui::make_state<ui::FlagView>());
-    menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
-    menu->add_item("Snek", ui::make_state<snek::SnekGame>());
-    menu->add_item("Othello", ui::make_state<othello::OthelloGame>());
-    // menu->add_item("Flappy", ui::make_state<flappy::FlappyGame>());
-    menu->add_item("Gallery", ui::make_state<ui::AnimationGallery>());
-    // menu->add_item("GPIO Control", nullptr);
-    // menu->add_item("SAO Control", nullptr);
-    // menu->add_item("Font Test", ui::make_state<FontTest>());
-    menu->add_item("Bootloader", [] { rom_reset_usb_boot_extra(-1, 0, false); });
-
+    const auto menu = create_main_menu();
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
 
@@ -140,8 +162,6 @@ public:
     ui::push_new_state<factory::FactoryTest>();
 
 #endif
-
-    // ui::push_new_state<ui::AnimationGallery>();
 
     /*
     enable_stdio_to_usb();
