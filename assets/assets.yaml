@@ -115,6 +115,15 @@ images:
   flag_stego_elite: gfx/flags_23.png
   flag_hash_easy: gfx/flags_24.png
   flag_hash_elite: gfx/flags_25.png
+  flag_explorer_1: gfx/flags_26.png
+  flag_explorer_2: gfx/flags_27.png
+  flag_explorer_3: gfx/flags_28.png
+  flag_web_easy: gfx/flags_29.png
+  flag_mvp: gfx/flags_30.png
+  flag_cred_1: gfx/flags_31.png
+  flag_cred_2: gfx/flags_32.png
+  flag_old_crypto: gfx/flags_33.png
+  flag_lockpick_diy: gfx/flags_34.png
 
 animations:
 

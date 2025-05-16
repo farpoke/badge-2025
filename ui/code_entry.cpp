@@ -346,7 +346,7 @@ namespace ui
 
     void CodeEntry::resume() {
         build_keyboard(buttons);
-        current_layout = EL_UPPERCASE;
+        current_layout = EL_LOWERCASE;
         update_keyboard(buttons, current_layout);
         selected_button = buttons.front();
         press_timer = 0;
@@ -373,7 +373,7 @@ namespace ui
         if (current_layout == EL_UPPERCASE || current_layout == EL_LOWERCASE)
             current_layout = EL_DIGITS;
         else
-            current_layout = EL_UPPERCASE;
+            current_layout = EL_LOWERCASE;
         update_keyboard(buttons, current_layout);
     }
 

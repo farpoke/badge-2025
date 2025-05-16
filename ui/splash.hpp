@@ -1,8 +1,9 @@
 #pragma once
 
-#include "state.hpp"
+#include <memory>
 
 #include <badge/image.hpp>
+#include <ui/state.hpp>
 
 namespace ui
 {
@@ -21,7 +22,7 @@ namespace ui
         void draw() override;
 
     protected:
-        uint8_t* mask;
+        std::unique_ptr<uint8_t[]> mask;
         image::Image bg_image;
     };
 

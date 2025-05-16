@@ -59,6 +59,8 @@ namespace lcd
             CMD_INTERFACE_PIXEL_FORMAT = 0x3A,
         };
 
+        void wait_for_spi();
+
         void select_command();
         void select_data();
         void deselect();

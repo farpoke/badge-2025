@@ -53,6 +53,7 @@ add_executable(${TARGET}
         main.cpp
         badge/buttons.cpp
         badge/drawing.cpp
+        badge/irq.cpp
         badge/lcd.cpp
         badge/storage.cpp
         fs/msc.cpp
@@ -95,6 +96,7 @@ else()
             games/snek.cpp
             ui/animations.cpp
             ui/code_entry.cpp
+            ui/flag_view.cpp
             ui/menu.cpp
             ui/qr_code.cpp
             ui/readme.cpp

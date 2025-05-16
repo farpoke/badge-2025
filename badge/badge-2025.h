@@ -1,7 +1,7 @@
 #pragma once
 
 // The size in bytes of the external FLASH on the badge.
-#define BADGE_FLASH_SIZE (4 * 1024 * 1024)
+#define BADGE_FLASH_SIZE (16 * 1024 * 1024)
 
 // Use UART 1 on pins 20 and 21 for stdout and stdin.
 #define PICO_DEFAULT_UART        1

@@ -19,6 +19,7 @@
 #include <games/snek.hpp>
 #include <ui/animations.hpp>
 #include <ui/code_entry.hpp>
+#include <ui/flag_view.hpp>
 #include <ui/menu.hpp>
 #include <ui/qr_code.hpp>
 #include <ui/readme.hpp>
@@ -109,6 +110,7 @@ public:
     usb::init();
     buttons::init();
     storage::init();
+    flags::init();
     lcd::init();
 
     disable_pwr_leds();
@@ -119,7 +121,7 @@ public:
     menu->add_item("README", ui::make_state<ui::Readme>());
     menu->add_item("Website", ui::make_state<Website>());
     menu->add_item("Code Entry", ui::make_state<ui::CodeEntry>());
-    menu->add_item("Found Flags", nullptr);
+    menu->add_item("Found Flags", ui::make_state<ui::FlagView>());
     menu->add_item("Blocks", ui::make_state<blocks::BlocksGame>());
     menu->add_item("Snek", ui::make_state<snek::SnekGame>());
     menu->add_item("Othello", ui::make_state<othello::OthelloGame>());

@@ -175,7 +175,7 @@ namespace lcd
         printf("> lcd::init ");
 
         const auto baud = spi_init(LCD_SPI_PORT, SPI_FREQ);
-        printf(" (%d.%d MHz) ", baud / 1'000'000, (baud / 100'000) % 10);
+        printf("(%d.%d MHz) ", baud / 1'000'000, (baud / 100'000) % 10);
 
         gpio_set_function(LCD_SPI_CLK_PIN, GPIO_FUNC_SPI);
         gpio_set_function(LCD_SPI_OUT_PIN, GPIO_FUNC_SPI);
@@ -200,8 +200,8 @@ namespace lcd
         reset();
         exit_sleep();
         display_on();
-        read_id();
-        read_status();
+        // read_id();
+        // read_status();
 
         backlight_on(20);
     }
