@@ -10,10 +10,12 @@
 namespace storage
 {
 
-    constexpr auto STORAGE_UNIT_PAGES = 2;
+    constexpr auto STORAGE_UNIT_PAGES = 4;
     constexpr auto STORAGE_UNIT_SIZE = FLASH_PAGE_SIZE * STORAGE_UNIT_PAGES;
 
     static_assert(FLASH_SECTOR_SIZE % STORAGE_UNIT_SIZE == 0);
+
+    constexpr auto FLAG_STORAGE_SIZE = 500;
 
     struct StorageData {
 
@@ -24,7 +26,7 @@ namespace storage
 
         int reserved[29] = {};
 
-        char entered_flags[flags::FLAG_COUNT][flags::MAX_FLAG_LENGTH] = {};
+        char entered_flags[FLAG_STORAGE_SIZE] = {};
 
     };
 

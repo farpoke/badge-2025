@@ -386,7 +386,7 @@ namespace ui
     }
 
     void CodeEntry::enter() {
-        flag = flags::validate_flag(entry_text);
+        flag = flags::enter_flag(entry_text);
         show_flag_timer = 2500;
     }
 

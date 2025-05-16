@@ -20,7 +20,7 @@ However, no such guarantees are provided for the rest of the badge :3
 # Code Entry
 
 Flags are codes that can be found by solving the various available challenges.
-They always* start with the text "gbgay{" and end with "}". The text inbetween
+They generally* start with the text "gbgay{" and end with "}". The text inbetween
 the curly braces is unique for each challenge. If you find one you can enter
 it by selecting "Code Entry" in the main menu, and using the little on-screen
 keyboard to enter in the text.
@@ -101,8 +101,7 @@ flags, the repository is private until after the event.
 * There are, of course, some exceptions to the rule, where, due to the nature
   of the challenge and/or flag, the leading "gbgay{" and trailing "}" have
   been omitted. For example, there are two short codes hidden on the badge
-  PCB itself that have strict space constraints, one specific challenge that
-  omits them for similar reasons.
+  PCB itself that have strict space constraints.
 
 
 

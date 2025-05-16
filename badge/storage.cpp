@@ -106,6 +106,12 @@ namespace storage
         // Update the CRC of the data stored in RAM.
         _ramUnit.crc = _ramUnit.compute_crc();
 
+        // If the data we have in RAM is identical to what's stored, then don't do anything.
+        if (memcmp(&_ramUnit, unit_ptr<void*>(_currentUnit), STORAGE_UNIT_SIZE) == 0) {
+            printf("  No change vs already stored data\n");
+            return;
+        }
+
         // Figure out what sector we want to write to. It should be a unit that is either already
         // erased (so we can write to it as is), or a unit at the start of a sector boundary (so
         // we can erase the whole sector and then write). We start looking at the unit following the

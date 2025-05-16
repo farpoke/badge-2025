@@ -89,7 +89,7 @@ images:
     image: gfx/blocks-tiles.png
     alpha: false
 
-  flag_invalid: gfx/flags_00.png
+  flag_default: gfx/flags_00.png
   flag_badge_readme: gfx/flags_01.png
   flag_badge_hidden: gfx/flags_02.png
   flag_badge_konami: gfx/flags_03.png
@@ -105,6 +105,16 @@ images:
   flag_crypto_caesar: gfx/flags_13.png
   flag_lockpick_basic: gfx/flags_14.png
   flag_lockpick_elite: gfx/flags_15.png
+  flag_web: gfx/flags_16.png
+  flag_pwn_medium: gfx/flags_17.png
+  flag_pwn_elite: gfx/flags_18.png
+  flag_re_easy: gfx/flags_19.png
+  flag_re_medium: gfx/flags_20.png
+  flag_re_elite: gfx/flags_21.png
+  flag_stego_easy: gfx/flags_22.png
+  flag_stego_elite: gfx/flags_23.png
+  flag_hash_easy: gfx/flags_24.png
+  flag_hash_elite: gfx/flags_25.png
 
 animations:
 

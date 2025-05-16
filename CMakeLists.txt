@@ -33,8 +33,8 @@ endif()
 set(PICO_BOARD_HEADER_DIRS ${CMAKE_SOURCE_DIR}/badge)
 set(PICO_BOARD badge-2025 CACHE STRING "Board type")
 
-# Our prototype PCB has 4 MiB of FLASH.
-set(PICO_FLASH_SIZE_BYTES "4 * 1024 * 1024")
+# Our final PCB has a whole 16 MiB of FLASH.
+set(PICO_FLASH_SIZE_BYTES "16 * 1024 * 1024")
 
 # Name of our project and target.
 set(TARGET badge-2025)
