@@ -11,9 +11,12 @@ controlling the header input/output pins. This README file is available both
 through the main menu of the badge itself, and on the USB drive available by
 plugging the badge into a computer.
 
-Note: The games here are provided for fun and to illustrate what can be done
-with tiny hardware, and winning a game does not provide any secret flags.
-However, no such guarantees are provided for the rest of the badge :3
+Note: The battery life has not been tested, and is probably abysmal.
+Do not keep the badge running on battery more than necessary.
+
+Note 2: The games here are provided for fun and to illustrate what can be
+done with tiny hardware, and winning a game does not provide any secret
+flags. However, no such guarantees are provided for the rest of the badge :3
 
 
 
@@ -24,6 +27,13 @@ They generally* start with the text "gbgay{" and end with "}". The text inbetwee
 the curly braces is unique for each challenge. If you find one you can enter
 it by selecting "Code Entry" in the main menu, and using the little on-screen
 keyboard to enter in the text.
+
+
+
+# Found Flags
+
+This screen will show entered flags (as little icons), in the order they were
+entered.
 
 
 

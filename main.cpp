@@ -36,6 +36,13 @@ extern "C" void launch_doom(void);
 void enable_stdio_to_usb();
 
 
+void enable_pwr_leds() {
+    gpio_set_function(PWR_LED_PIN, GPIO_FUNC_SIO);
+    gpio_set_dir(PWR_LED_PIN, true);
+    gpio_put(PWR_LED_PIN, true);
+}
+
+
 void disable_pwr_leds() {
     gpio_set_function(PWR_LED_PIN, GPIO_FUNC_SIO);
     gpio_set_dir(PWR_LED_PIN, true);
@@ -140,6 +147,9 @@ ui::StatePtr create_main_menu() {
 }
 
 [[noreturn]] int main() {
+
+    enable_pwr_leds();
+
     stdio_init_all();
     printf("\n===== HackGBGay 2025 =====\n");
 
@@ -149,13 +159,13 @@ ui::StatePtr create_main_menu() {
     flags::init();
     lcd::init();
 
-    disable_pwr_leds();
-
 #if !FACTORY_TEST
 
     const auto menu = create_main_menu();
     ui::push_state(menu);
     ui::push_new_state<ui::SplashScreen>();
+
+    disable_pwr_leds();
 
 #else
 
@@ -185,8 +195,10 @@ ui::StatePtr create_main_menu() {
         const auto now = get_absolute_time();
         const auto delta_time_ms = absolute_time_diff_us(last_frame_time, now) / 1000;
 
-        if (delta_time_ms < 10)
+        if (delta_time_ms < 30) {
+            sleep_ms(30 - delta_time_ms);
             continue;
+        }
 
         last_frame_time = now;
 

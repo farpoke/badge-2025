@@ -293,12 +293,19 @@ namespace ui
     }
 
     void CodeEntry::draw() {
-        drawing::clear(COLOR_BLACK);
-
         if (show_flag_timer > 0) {
-            const auto &image = flags::get_flag_image(flag);
-            drawing::draw_image((lcd::WIDTH - image.width) / 2, (lcd::HEIGHT - image.height) / 2, image);
-            return;
+            if (flag != flags::INVALID) {
+                drawing::clear(COLOR_BLACK);
+                const auto &image = flags::get_flag_image(flag);
+                drawing::draw_image((lcd::WIDTH - image.width) / 2, (lcd::HEIGHT - image.height) / 2, image);
+                return;
+            }
+            else {
+                drawing::clear(rgb888(show_flag_timer / 2, 0, 0));
+            }
+        }
+        else {
+            drawing::clear(COLOR_BLACK);
         }
 
         for (const auto *button : buttons) {
@@ -387,7 +394,10 @@ namespace ui
 
     void CodeEntry::enter() {
         flag = flags::enter_flag(entry_text);
-        show_flag_timer = 2500;
+        if (flag != flags::INVALID)
+            show_flag_timer = 2500;
+        else
+            show_flag_timer = 500;
     }
 
 } // namespace ui
