@@ -2,12 +2,14 @@
 
 #include <cassert>
 
+#include <pico.h>
+
 #include <assets.hpp>
+#include <badge/buttons.hpp>
 #include <badge/drawing.hpp>
 #include <badge/pixel.hpp>
+#include <ui/ui.hpp>
 
-#include "badge/buttons.hpp"
-#include "ui/ui.hpp"
 
 namespace othello
 {
@@ -143,7 +145,7 @@ namespace othello
             else
                 return 0;
         }
-        assert(false && "Logic error in othello::BoardState::count_flips");
+        panic("Logic error in othello::BoardState::count_flips");
     }
 
     int BoardState::start_flips(int r0, int c0, int dr, int dc) {

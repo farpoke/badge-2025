@@ -143,6 +143,7 @@ namespace storage
 
         }, reinterpret_cast<void*>(target_unit), 1000);
 
+        (void)status;
         assert(status == PICO_OK);
 
         printf("  Data stored to FLASH unit %d\n", _currentUnit);

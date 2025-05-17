@@ -46,7 +46,7 @@ namespace snek
             case CellState::RIGHT:
                 return {1, 0};
             default:
-                assert(false && "Invalid direction");
+                panic("Invalid direction");
         }
     }
 
@@ -175,7 +175,7 @@ namespace snek
                         dy = 1;
                     }
                     else {
-                        assert(false);
+                        panic("Logic error in Snek");
                     }
                     // Draw eyes.
                     drawing::draw_pixel(x, y, COLOR_BLACK);

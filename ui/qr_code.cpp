@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cstdio>
 
+#include <pico.h>
+
 #include <badge/drawing.hpp>
 
 #include "qr_code_data.hpp"
@@ -303,7 +305,7 @@ namespace ui::qr
             case 6: return (row * col % 2 + row * col % 3) % 2;
             case 7: return ((row + col) % 2 + row * col % 3) % 2;
             default:
-                assert(false && "Invalid mask number");
+                panic("Invalid mask number");
             }
         };
 
