@@ -8,7 +8,8 @@ kernel32 = ctypes.windll.kernel32
 
 
 ROOT = Path(__file__).parent
-UF2_FILE = (ROOT.parent / 'cmake-build-factorytest' / 'badge-2025.uf2').resolve()
+# UF2_FILE = (ROOT.parent / 'cmake-build-factorytest' / 'badge-2025.uf2').resolve()
+UF2_FILE = (ROOT.parent / 'cmake-build-release' / 'badge-2025.uf2').resolve()
 
 assert UF2_FILE.is_file()
 
